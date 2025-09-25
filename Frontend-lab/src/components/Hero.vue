@@ -20,14 +20,14 @@
   flex-wrap: wrap;
 }
 .hero-img {
-  width: 300px;
+  width: 350px;
   border: 4px solid hwb(139 21% 53%);
   border-radius: 10px;
 }
 .hero-text {
   color: black;
   font-weight: bold;
-  max-width: 400px;
+  width: 500px;
   font-size: 16px;
   line-height: 1.5;
 }

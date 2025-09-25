@@ -44,7 +44,7 @@ h2 {
 }
 
 .category-image-container img {
-  width: 120%;
+  width: 110%;
   height: auto;
   display: block;
 }
