@@ -22,11 +22,12 @@ body, html {
 }
 
 .content-wrapper {
-  flex-grow: 1;
-  /* Aquí puedes aplicar el estilo del mockup para el fondo claro */
+  flex-grow: 1; 
+  margin-top: 80px; /* Espacio para el header fijo */
   background-color: #f7e8dd;
   max-width: 1280px;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
   padding: 40px;
 }
 </style>
