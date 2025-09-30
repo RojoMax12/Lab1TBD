@@ -38,16 +38,17 @@ color: #333;
 }
 
 .login-btn {
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
+  background: white;
+  color: #4d5d39;
   border: none;
-  border-radius: 4px;
+  padding: 5px 12px;
+  border-radius: 5px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 .login-btn:hover {
-  background-color: #0056b3;
+  background-color: #f0f0f0;
 }
 
 .name-employeer {

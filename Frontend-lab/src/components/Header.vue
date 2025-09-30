@@ -49,4 +49,8 @@
   cursor: pointer;
   font-weight: bold;
 }
+
+.login-btn:hover {
+  background-color: #f0f0f0;
+}
 </style>
