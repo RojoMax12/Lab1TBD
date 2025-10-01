@@ -4,53 +4,61 @@
       <img src="/logo.png" alt="Logo" class="logo" />
       <h1 class="site-title">Trash TBD</h1>   
     </div>
-    <button class="login-btn">Iniciar sesión</button>
+
+    <!-- Botón para abrir modal -->
+    <button @click="showLogin = true" class="login-btn">
+      Iniciar sesión
+    </button>
+
+    <!-- Modal -->
+    <LoginModal v-if="showLogin" @close="showLogin = false" />
   </header>
 </template>
+
+<script setup>
+import { ref } from "vue"
+import LoginModal from "./LoginModal.vue" // ajusta la ruta si está en otra carpeta
+
+const showLogin = ref(false)
+</script>
 
 <style scoped>
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background-color: #4d5d39;
+  background-color: #5e6541;
+  padding: 1rem;
   color: white;
 }
+
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.5rem;
 }
+
 .logo {
-  width: 80px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
 }
 
 .site-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin: 0;
-  background: linear-gradient(135deg, #ffffff, #e8f5e8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 .login-btn {
-  background: white;
-  color: #4d5d39;
+  background-color: white;
+  color: #5e6541;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
   border: none;
-  padding: 5px 12px;
-  border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
 }
 
 .login-btn:hover {
-  background-color: #f0f0f0;
+  background-color: #ddd;
 }
 </style>
