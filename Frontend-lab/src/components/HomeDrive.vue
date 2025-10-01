@@ -6,11 +6,22 @@
             Nombre del Conductor
         </h1>
       </div>
-      <button class="login-btn">
-        Cerrar sesión
-      </button>
+<button class="logout-btn" @click="logout">
+  Cerrar sesión
+</button>
     </header>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function logout() {
+  // Aquí puedes agregar la lógica de cierre de sesión, como limpiar tokens, etc.
+  router.push({ name: 'home' }) // Redirige a la página de inicio después de cerrar sesión
+}
+</script>
 
 <style scoped>
 .header {
@@ -37,7 +48,7 @@
 color: #333;
 }
 
-.login-btn {
+.logout-btn {
   background: white;
   color: #4d5d39;
   border: none;
@@ -47,7 +58,7 @@ color: #333;
   font-weight: bold;
 }
 
-.login-btn:hover {
+.logout-btn:hover {
   background-color: #f0f0f0;
 }
 

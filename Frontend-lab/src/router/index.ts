@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import HomeDriverView from '../views/HomeDriverView.vue'
+import HomeAdminView from '../views/HomeAdminView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: HomeView },
-    { path: '/home-drive', name: 'home-drive', component: HomeDriverView }
+    { path: '/driver', name: 'home-driver', component: HomeDriverView },
+    { path: '/admin', name: 'home-admin', component: HomeAdminView }
   ]
 })
 
