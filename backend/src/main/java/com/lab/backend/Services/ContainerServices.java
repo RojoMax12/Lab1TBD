@@ -1,6 +1,5 @@
 package com.lab.backend.Services;
 
-import com.lab.backend.Entities.ContainerEntity;
 import com.lab.backend.Repository.ContainerRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +16,10 @@ public class ContainerServices {
 
     public List<Map<String, Object>> getProblematicContainersReport() {
         return containerRepository.getProblematicContainers();
+    }
+
+    public List<Map<String, Object>> getContainerDensityAnalysis() {
+        return containerRepository.getMonthlyContainerDensityAnalysis();
     }
 
 }

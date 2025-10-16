@@ -50,21 +50,24 @@ public class ContainerRepository {
     //Salida: Lista con id_container y el conteo de conductores únicos para cada contenedor problemático.
 
     public List<Map<String, Object>> getProblematicContainers() {
-        String sql = "WITH PickUpsLastYear AS (" +  //CTE PickUpsLastYear
-                "    SELECT id_container, id_route FROM pick_up_entity " +  //Selecciona id_container e id_route de pick_up_entity
-                "    WHERE date_hour >= NOW() - INTERVAL '1 year'" +        //Filtra por los últimos 12 meses
-                ") " +
-                "SELECT " +     //Selecciona id_container y el conteo de conductores únicos
-                "    py.id_container," +
-                "    COUNT(DISTINCT re.id_driver) AS driverCount " +
-                "FROM " +       //Desde la CTE PickUpsLastYear
-                "    PickUpsLastYear AS py " +
-                "JOIN " +       //Une con route_entity para obtener id_driver
-                "    route_entity AS re ON py.id_route = re.id " +
-                "GROUP BY " +
-                "    py.id_container " +
-                "HAVING " +
-                "    COUNT(DISTINCT re.id_driver) > 3;";
+        String sql = """
+            WITH PickUpsLastYear AS (
+                SELECT
+                    id_container,
+                    id_route
+                FROM pick_up_entity
+                WHERE date_hour >= NOW() - INTERVAL '1 year'
+            )
+            SELECT
+                py.id_container,
+                COUNT(DISTINCT re.id_driver) AS driverCount
+            FROM PickUpsLastYear AS py
+            JOIN route_entity AS re
+            ON py.id_route = re.id
+            GROUP BY py.id_container
+            HAVING
+                COUNT(DISTINCT re.id_driver) > 3;
+        """;
 
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql).executeAndFetchTable().asList();
@@ -84,5 +87,65 @@ public class ContainerRepository {
     5. Finalmente, se filtran los resultados para incluir solo aquellos contenedores que han sido recogidos por más de 3 conductores diferentes en el último año.
 
     Esto se muestra con el SELECT de la línea 57 que muestra el id_container y el conteo final de conductores únicos como driverCount.
+     */
+
+
+    //Sentencia 5: Análisis mensual de la densidad de contenedores
+    //Entrada: -
+    //Salida: Lista con mes, promedio de contenedores por ruta (densidad) y la diferencia con el mes anterior.
+    public List<Map<String, Object>> getMonthlyContainerDensityAnalysis() {
+        String sql = """
+            WITH MonthlyDensity AS (
+                SELECT
+                    DATE_TRUNC('month', pu.date_hour) AS month_start_date,
+                    COUNT(pu.id_container) AS containers_per_month,
+                    COUNT(DISTINCT pu.id_route) AS total_routes
+                FROM pick_up_entity AS pu
+                WHERE pu.date_hour >= NOW() - INTERVAL '12 months'
+                GROUP BY month_start_date
+            ),
+            MonthlyAverage AS (
+                SELECT
+                    month_start_date,
+                    (CAST(containers_per_month AS numeric) / total_routes) AS average_containers_per_route
+                FROM MonthlyDensity
+            )
+            SELECT
+                TO_CHAR(ma.month_start_date, 'YYYY-MM') AS month,
+                ROUND(ma.average_containers_per_route, 2) AS average_containers,
+                ROUND(
+                    ma.average_containers_per_route - LAG(ma.average_containers_per_route, 1)
+                    OVER (ORDER BY ma.month_start_date), 2
+                ) AS diff_vs_prev_month
+            FROM MonthlyAverage AS ma
+            ORDER BY ma.month_start_date DESC;
+        """;
+
+        try (Connection connection = sql2o.open()) {
+            return connection.createQuery(sql).executeAndFetchTable().asList();
+        } catch (Exception e) {
+            System.err.println("Error al calcular la densidad mensual de contenedores: " + e.getMessage());
+            throw new RuntimeException("No se pudo obtener el análisis de densidad", e);
+        }
+    }
+
+    //Explicación en palabras de la sentencia SQL:
+    /*
+    1. CTE MonthlyDensity:
+    - Agrupa las recolecciones por mes (month_start_date).
+    - Cuenta el número total de contenedores recogidos (containers_per_month) y el número total de rutas únicas (total_routes) para cada mes en los últimos 12 meses.
+    2. CTE MonthlyAverage:
+    - Calcula el promedio de contenedores por ruta para cada mes dividiendo containers_per_month por total_routes.
+    3. Consulta final:
+    - Selecciona el mes formateado como 'YYYY-MM', el promedio de contenedores por ruta redondeado a 2 decimales (average_containers).
+    - Calcula la diferencia con el mes anterior usando la función LAG() y redondea el resultado a 2 decimales (diff_vs_prev_month).
+    - Ordena los resultados por mes en orden descendente para mostrar primero los meses más recientes.
+     */
+
+    //FUNCION DE VENTANA: LAG()
+    /* Se utiliza para acceder al valor del promedio de contenedores del mes anterior sin necesidad de hacer una auto-unión (self-join) en la tabla.
+       La función LAG() toma dos argumentos principales: la columna de la cual se quiere obtener el valor previo (en este caso, average_containers_per_route)
+       y el número de filas hacia atrás desde la fila actual (1 en este caso, para obtener el mes anterior).
+       La cláusula OVER (ORDER BY ma.month_start_date) define el orden en el que se aplicará la función LAG(), asegurando que se compare con el mes inmediatamente anterior.
      */
 }

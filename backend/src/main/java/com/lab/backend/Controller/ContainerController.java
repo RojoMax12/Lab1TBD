@@ -1,6 +1,5 @@
 package com.lab.backend.Controller;
 
-import com.lab.backend.Entities.ContainerEntity;
 import com.lab.backend.Services.ContainerServices;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -18,5 +17,10 @@ public class ContainerController {
     @GetMapping("/problematic")
     public List<Map<String, Object>> getProblematicContainers() {
         return containerService.getProblematicContainersReport();
+    }
+
+    @GetMapping("/density-analysis") // Nuevo endpoint
+    public List<Map<String, Object>> getContainerDensityAnalysisReport() {
+        return containerService.getContainerDensityAnalysis();
     }
 }
