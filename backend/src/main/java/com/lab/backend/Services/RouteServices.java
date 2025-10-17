@@ -25,4 +25,8 @@ public class RouteServices {
             throw new RuntimeException("Error al planificar ruta", e);
         }
     }
+
+    public List<java.util.Map<String, Object>> findInefficientRoutes() {
+        return routeRepository.findInefficientRoutes();
+    }
 }

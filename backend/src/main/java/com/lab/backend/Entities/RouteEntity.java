@@ -1,11 +1,15 @@
 package com.lab.backend.Entities;
 
+import java.time.LocalTime;
 import java.util.Date;
 
+@SuppressWarnings("ALL")
 public class RouteEntity {
     private Long id;
     private Long id_driver;
-    private Date date_hour;
+    private Date date;
+    private LocalTime start_time;
+    private LocalTime end_time;
     private String route_status;
     private Long id_central;
     private Long id_pick_up_point;
@@ -27,11 +31,27 @@ public class RouteEntity {
     }
 
     public Date getDate_hour() {
-        return date_hour;
+        return date;
     }
 
     public void setDate_hour(Date date_hour) {
-        this.date_hour = date_hour;
+        this.date = date;
+    }
+
+    public LocalTime getStart_time() {
+        return start_time;
+    }
+
+    public void setStart_time(LocalTime start_time) {
+        this.start_time = start_time;
+    }
+
+    public LocalTime getEnd_time() {
+        return end_time;
+    }
+
+    public void setEnd_time(LocalTime end_time) {
+        this.end_time = end_time;
     }
 
     public String getRoute_status() {

@@ -1,8 +1,10 @@
 package com.lab.backend.Controller;
 
 import com.lab.backend.Services.RouteServices;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/Route")
@@ -35,4 +37,11 @@ public class RouteController {
             return "❌ Error: " + e.getMessage();
         }
     }
+
+    @GetMapping("/inefficient")
+    public ResponseEntity<List<Map<String, Object>>> getInefficientRoutes() {
+        List<Map<String, Object>> inefficientRoutes = routeService.findInefficientRoutes();
+        return ResponseEntity.ok(inefficientRoutes);
+    }
+
 }
