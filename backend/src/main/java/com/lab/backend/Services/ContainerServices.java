@@ -22,4 +22,9 @@ public class ContainerServices {
         return containerRepository.getMonthlyContainerDensityAnalysis();
     }
 
+    // ✅ Lógica de servicio para exponer la consulta
+    public List<Map<String, Object>> getContenedoresSinRecoleccionReciente() {
+        return containerRepository.getContenedoresSinRecoleccionReciente();
+    }
+
 }

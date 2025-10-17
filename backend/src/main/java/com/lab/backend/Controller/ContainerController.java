@@ -23,4 +23,9 @@ public class ContainerController {
     public List<Map<String, Object>> getContainerDensityAnalysisReport() {
         return containerService.getContainerDensityAnalysis();
     }
+
+    @GetMapping("/NoRecolectados")
+    public List<Map<String, Object>> getContenedoresSinRecoleccionReciente() {
+        return containerService.getContenedoresSinRecoleccionReciente();
+    }
 }

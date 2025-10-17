@@ -148,4 +148,34 @@ public class ContainerRepository {
        y el número de filas hacia atrás desde la fila actual (1 en este caso, para obtener el mes anterior).
        La cláusula OVER (ORDER BY ma.month_start_date) define el orden en el que se aplicará la función LAG(), asegurando que se compare con el mes inmediatamente anterior.
      */
+
+
+    public List<Map<String, Object>> getContenedoresSinRecoleccionReciente() {
+        String sql = """
+            SELECT
+                c.id AS id_contenedor,
+                w.waste_type AS tipo_residuo,
+                c.coord_x,
+                c.coord_y,
+                COALESCE(TO_CHAR(MAX(p.date_hour), 'YYYY-MM-DD HH24:MI:SS'), 'Nunca recolectado') AS ultima_recoleccion
+            FROM container c
+            LEFT JOIN waste w ON c.id_waste = w.id
+            LEFT JOIN pickup p ON c.id = p.id_container
+            GROUP BY c.id, w.waste_type, c.coord_x, c.coord_y
+            HAVING
+                MAX(p.date_hour) IS NULL
+                OR MAX(p.date_hour) < (NOW() - INTERVAL '90 days')
+            ORDER BY ultima_recoleccion DESC NULLS LAST;
+        """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .executeAndFetchTable()
+                    .asList();
+        } catch (Exception e) {
+            System.err.println("Error al obtener contenedores sin recolección reciente: " + e.getMessage());
+            throw new RuntimeException("No se pudo obtener la lista de contenedores sin recolección reciente", e);
+        }
+    }
+
 }
