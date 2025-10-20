@@ -5,6 +5,7 @@ import com.lab.backend.Repository.RouteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RouteServices {
@@ -28,5 +29,14 @@ public class RouteServices {
 
     public List<java.util.Map<String, Object>> findInefficientRoutes() {
         return routeRepository.findInefficientRoutes();
+    }
+
+    public List<Map<String, Object>> findDriverEfficiency() {
+        try {
+            return routeRepository.findDriverEfficiency();
+        } catch (Exception e) {
+            System.err.println("Error en servicio findDriverEfficiency: " + e.getMessage());
+            throw new RuntimeException("Error al calcular eficiencia de recolección", e);
+        }
     }
 }

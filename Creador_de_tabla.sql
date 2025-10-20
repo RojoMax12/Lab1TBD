@@ -1,4 +1,3 @@
-
 CREATE TABLE central (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -50,7 +49,7 @@ CREATE TABLE pickup (
     id BIGSERIAL PRIMARY KEY,
     id_container BIGINT REFERENCES container(id) ON DELETE CASCADE,
     id_route BIGINT REFERENCES route(id) ON DELETE CASCADE,
-    date_ TIMESTAMP NOT NULL DEFAULT NOW()
+    date TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =========================================================
@@ -73,7 +72,7 @@ INSERT INTO container (id_waste, coord_x, coord_y, weight, status) VALUES
 (1, 12.3, 22.1, 50.0, 'Disponible'),
 (2, 14.8, 25.7, 70.5, 'Disponible'),
 (3, 15.2, 27.0, 60.0, 'Disponible'),
-(1, 16.0, 28.5, 55.5, 'Disponible');
+(1, 16.0, 28.5, 55.5, 'Disponible'),
 (2, 17.5, 29.0, 58.0, 'Disponible'),
 (3, 18.0, 30.0, 62.0, 'Disponible'),
 (1, 19.0, 31.0, 59.0, 'Disponible'),

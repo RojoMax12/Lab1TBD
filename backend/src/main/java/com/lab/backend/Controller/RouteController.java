@@ -44,4 +44,9 @@ public class RouteController {
         return ResponseEntity.ok(inefficientRoutes);
     }
 
+    @GetMapping("/efficiency")
+    public ResponseEntity<List<Map<String, Object>>> getDriverEfficiency() {
+        List<Map<String, Object>> efficiency = routeService.findDriverEfficiency();
+        return ResponseEntity.ok(efficiency);
+    }
 }

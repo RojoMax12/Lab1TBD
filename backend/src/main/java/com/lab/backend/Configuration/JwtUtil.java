@@ -19,7 +19,7 @@ public class JwtUtil {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
-                .signWith(SECRET_KEY) // ✅ ahora acepta Key
+                .signWith(SECRET_KEY)
                 .compact();
     }
 

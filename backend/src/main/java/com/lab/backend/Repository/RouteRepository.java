@@ -30,7 +30,36 @@ public class RouteRepository {
         }
     }
 
-    // Método para encontrar rutas ineficientes (Consulta a desarrollar N°4)
+    // CONSULTA A DESARROLLAR N°1
+
+    public List<Map<String, Object>> findDriverEfficiency() {
+        String sql = """
+            SELECT 
+                d.name AS driver_name,
+                d.last_name AS driver_last_name,
+                ROUND(AVG(EXTRACT(EPOCH FROM (r.end_time - r.start_time)) / 3600), 2) AS average_time_hours
+            FROM 
+                route r
+            JOIN 
+                driver d ON r.id_driver = d.id
+            WHERE 
+                r.route_status ILIKE 'Finalizada'
+                AND r.date_ >= NOW() - INTERVAL '6 months'
+            GROUP BY 
+                d.id, d.name, d.last_name
+            ORDER BY 
+                average_time_hours ASC;
+        """;
+
+        try (Connection con = sql2o.open()) {
+            return con.createQuery(sql).executeAndFetchTable().asList();
+        } catch (Exception e) {
+            System.err.println("Error executing findDriverEfficiency: " + e.getMessage());
+            throw new RuntimeException("Error calculating driver efficiency", e);
+        }
+    }
+
+    // Metodo para encontrar rutas ineficientes (Consulta a desarrollar N°4)
     public List<Map<String, Object>> findInefficientRoutes() {
         String sql = """
             WITH durations AS (
