@@ -59,6 +59,58 @@ public class RouteRepository {
         }
     }
 
+    // CONSULTA A DESARROLLAR N°3
+
+    public List<Map<String, Object>> compareWastePerformance() {
+        String sql = """
+            WITH top_drivers AS (
+                SELECT\s
+                    r.id_driver,
+                    COUNT(*) AS completed_routes
+                FROM route r
+                WHERE r.route_status ILIKE 'FINALIZADA'
+                GROUP BY r.id_driver
+                ORDER BY completed_routes DESC
+                LIMIT 2
+            ),
+            driver_names AS (
+                SELECT\s
+                    d.id,
+                    CONCAT(d.name, ' ', d.last_name) AS full_name
+                FROM driver d
+                WHERE d.id IN (SELECT id_driver FROM top_drivers)
+            ),
+            waste_per_driver AS (
+                SELECT\s
+                    r.id_driver,
+                    w.waste_type,
+                    SUM(c.weight) AS total_weight
+                FROM route r
+                JOIN pickup p ON r.id = p.id_route
+                JOIN container c ON p.id_container = c.id
+                JOIN waste w ON c.id_waste = w.id
+                WHERE r.route_status ILIKE 'FINALIZADA'
+                GROUP BY r.id_driver, w.waste_type
+            )
+            SELECT
+                wp.waste_type,
+                (SELECT full_name FROM driver_names ORDER BY id LIMIT 1 OFFSET 0) AS driver_a_name,
+                MAX(CASE WHEN wp.id_driver = (SELECT id_driver FROM top_drivers LIMIT 1 OFFSET 0) THEN wp.total_weight END) AS driver_a_weight,
+                (SELECT full_name FROM driver_names ORDER BY id LIMIT 1 OFFSET 1) AS driver_b_name,
+                MAX(CASE WHEN wp.id_driver = (SELECT id_driver FROM top_drivers LIMIT 1 OFFSET 1) THEN wp.total_weight END) AS driver_b_weight
+            FROM waste_per_driver wp
+            GROUP BY wp.waste_type
+            ORDER BY wp.waste_type;
+        """;
+
+        try (Connection con = sql2o.open()) {
+            return con.createQuery(sql).executeAndFetchTable().asList();
+        } catch (Exception e) {
+            System.err.println("Error executing compareWastePerformance: " + e.getMessage());
+            throw new RuntimeException("Error comparing performance by waste type", e);
+        }
+    }
+
     // Metodo para encontrar rutas ineficientes (Consulta a desarrollar N°4)
     public List<Map<String, Object>> findInefficientRoutes() {
         String sql = """

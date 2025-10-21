@@ -49,4 +49,10 @@ public class RouteController {
         List<Map<String, Object>> efficiency = routeService.findDriverEfficiency();
         return ResponseEntity.ok(efficiency);
     }
+
+    @GetMapping("/wastePerformance")
+    public ResponseEntity<List<Map<String, Object>>> compareWastePerformance() {
+        List<Map<String, Object>> result = routeService.compareWastePerformance();
+        return ResponseEntity.ok(result);
+    }
 }

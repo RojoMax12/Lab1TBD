@@ -32,11 +32,10 @@ public class RouteServices {
     }
 
     public List<Map<String, Object>> findDriverEfficiency() {
-        try {
             return routeRepository.findDriverEfficiency();
-        } catch (Exception e) {
-            System.err.println("Error en servicio findDriverEfficiency: " + e.getMessage());
-            throw new RuntimeException("Error al calcular eficiencia de recolección", e);
-        }
+    }
+
+    public List<Map<String, Object>> compareWastePerformance() {
+        return routeRepository.compareWastePerformance();
     }
 }
