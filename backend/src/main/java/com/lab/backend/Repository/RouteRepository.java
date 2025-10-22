@@ -144,4 +144,17 @@ public class RouteRepository {
         }
     }
 
+    // Método para la actualización masiva de contenedores (Sentencia N°7)
+    public void updateContainerWeight(Long routeId, double newWeight) {
+        String sql = "CALL actualizar_peso_contenedores(:routeId, :newWeight)";
+        try (Connection con = sql2o.open()) {
+            con.createQuery(sql)
+                    .addParameter("routeId", routeId)
+                    .addParameter("newWeight", newWeight)
+                    .executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating container weights: " + e.getMessage());
+        }
+    }
+
 }

@@ -53,7 +53,7 @@ CREATE TABLE pickup (
 );
 
 -- =========================================================
--- 3️⃣ Insertar datos iniciales (para pruebas)
+--  Insertar datos iniciales (para pruebas)
 -- =========================================================
 
 -- Centrales
@@ -186,7 +186,34 @@ INSERT INTO pickup (id_container, id_route, date) VALUES
 (3,20,'2025-10-20 09:00:00');
 
 -- =========================================================
--- 5️⃣ Ejemplo de uso del procedimiento
+-- Procedimiento almacenado: actualizar_peso_contenedores
+-- =========================================================
+
+CREATE OR REPLACE PROCEDURE actualizar_peso_contenedores(
+    p_id_ruta BIGINT,
+    p_nuevo_peso DOUBLE PRECISION
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF p_nuevo_peso < 0 THEN
+        RAISE EXCEPTION 'El peso no puede ser negativo. Se revierte la transacción.';
+    END IF;
+
+    UPDATE container
+    SET weight = p_nuevo_peso
+    WHERE id IN (
+        SELECT id_container
+        FROM pickup
+        WHERE id_route = p_id_ruta
+    );
+
+    RAISE NOTICE 'Contenedores de la ruta % actualizados correctamente a peso % kg', p_id_ruta, p_nuevo_peso;
+END;
+$$;
+
+-- =========================================================
+-- Ejemplo de uso del procedimiento
 -- =========================================================
 -- (Asegúrate de haber creado previamente planificar_ruta)
 

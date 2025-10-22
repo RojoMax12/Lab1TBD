@@ -38,4 +38,9 @@ public class RouteServices {
     public List<Map<String, Object>> compareWastePerformance() {
         return routeRepository.compareWastePerformance();
     }
+
+    public void updateContainerWeight(Long routeId, double newWeight) {
+        routeRepository.updateContainerWeight(routeId, newWeight);
+    }
+
 }

@@ -55,4 +55,17 @@ public class RouteController {
         List<Map<String, Object>> result = routeService.compareWastePerformance();
         return ResponseEntity.ok(result);
     }
+
+    @PutMapping("/update-container-weight/{routeId}")
+    public ResponseEntity<String> updateContainerWeight(
+            @PathVariable Long routeId,
+            @RequestParam double newWeight) {
+        try {
+            routeService.updateContainerWeight(routeId, newWeight);
+            return ResponseEntity.ok("Contenedores de la ruta " + routeId + " actualizados a " + newWeight + " kg");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(" Error: " + e.getMessage());
+        }
+    }
+
 }
