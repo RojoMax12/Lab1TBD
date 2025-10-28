@@ -35,7 +35,7 @@ public class RouteEntity {
     }
 
     public void setDate_hour(Date date_hour) {
-        this.date = date;
+        this.date = date_hour;
     }
 
     public LocalTime getStart_time() {
