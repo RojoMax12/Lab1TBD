@@ -27,8 +27,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**", "/api/Route/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/public/login").permitAll()
+                        .requestMatchers("/api/**").authenticated()
                 );
 
         http.addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
