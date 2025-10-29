@@ -49,7 +49,7 @@ CREATE TABLE pickup (
     id BIGSERIAL PRIMARY KEY,
     id_container BIGINT REFERENCES container(id) ON DELETE CASCADE,
     id_route BIGINT REFERENCES route(id) ON DELETE CASCADE,
-    date TIMESTAMP NOT NULL DEFAULT NOW()
+    date_hour TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =========================================================
@@ -114,7 +114,7 @@ INSERT INTO route (id_driver, date_, start_time, end_time, route_status, id_cent
 (2, '2025-10-20', '05:45:00', '09:15:00', 'Finalizada', 2, 2);   -- 3.5h
 
 -- Pickup
-INSERT INTO pickup (id_container, id_route, date) VALUES
+INSERT INTO pickup (id_container, id_route, date_hour) VALUES
 (1,1,'2025-10-20 07:20:00'),
 (2,1,'2025-10-20 08:00:00'),
 (3,1,'2025-10-20 09:00:00'),

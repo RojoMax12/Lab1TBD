@@ -7,7 +7,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS peso_recolectado_diario AS
 SELECT
     date_trunc('day', p.date_hour)::date AS fecha,
     SUM(c.weight) AS peso_total
-FROM pick_up_entity p
+FROM pickup p
 JOIN containers c ON p.id_container = c.id
 GROUP BY fecha
 ORDER BY fecha;

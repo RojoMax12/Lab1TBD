@@ -55,14 +55,14 @@ public class ContainerRepository {
                 SELECT
                     id_container,
                     id_route
-                FROM pick_up_entity
+                FROM pickup
                 WHERE date_hour >= NOW() - INTERVAL '1 year'
             )
             SELECT
                 py.id_container,
                 COUNT(DISTINCT re.id_driver) AS driverCount
             FROM PickUpsLastYear AS py
-            JOIN route_entity AS re
+            JOIN route AS re
             ON py.id_route = re.id
             GROUP BY py.id_container
             HAVING
@@ -100,7 +100,7 @@ public class ContainerRepository {
                     DATE_TRUNC('month', pu.date_hour) AS month_start_date,
                     COUNT(pu.id_container) AS containers_per_month,
                     COUNT(DISTINCT pu.id_route) AS total_routes
-                FROM pick_up_entity AS pu
+                FROM pickup AS pu
                 WHERE pu.date_hour >= NOW() - INTERVAL '12 months'
                 GROUP BY month_start_date
             ),
