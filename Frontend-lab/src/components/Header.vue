@@ -1,14 +1,24 @@
 <template>
-  <header class="header">
-    <div class="logo-container">
-      <img src="/logo.png" alt="Logo" class="logo" />
-      <h1 class="site-title">Trash TBD</h1>   
+  <header class="header" role="banner">
+    <div class="left">
+      <div class="logo-container">
+        <img src="/logo.png" alt="Logo Trash TBD" class="logo" />
+        <h1 class="site-title">Trash TBD</h1>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#" class="nav-link">Inicio</a>
+        <a href="#" class="nav-link">Servicios</a>
+        <a href="#" class="nav-link">Contacto</a>
+      </nav>
     </div>
 
-    <!-- Botón para abrir modal -->
-    <button @click="showLogin = true" class="login-btn">
-      Iniciar sesión
-    </button>
+    <div class="actions">
+      <!-- Botón para abrir modal -->
+      <button @click="showLogin = true" class="login-btn" aria-haspopup="dialog">
+        Iniciar sesión
+      </button>
+    </div>
 
     <!-- Modal -->
     <LoginModal v-if="showLogin" @close="showLogin = false" />
@@ -24,41 +34,103 @@ const showLogin = ref(false)
 
 <style scoped>
 .header {
+  --bg-start: #6a704a;
+  --bg-end: #4e5336;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #5e6541;
-  padding: 1rem;
+  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
   color: white;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
 }
 
 .site-title {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.nav-link {
+  color: rgba(255,255,255,0.92);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: background-color .12s ease, color .12s ease, transform .12s ease;
+}
+
+.nav-link:hover,
+.nav-link:focus {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .login-btn {
-  background-color: white;
+  background: linear-gradient(180deg,#ffffff,#f3f3f3);
   color: #5e6541;
   padding: 0.5rem 1rem;
-  border-radius: 2rem;
+  border-radius: 999px;
   border: none;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(94,101,65,0.14);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
 }
 
 .login-btn:hover {
-  background-color: #ddd;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(94,101,65,0.18);
+}
+
+.login-btn:focus {
+  outline: 3px solid rgba(255,255,255,0.12);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .nav { display: none; }
+  .site-title { font-size: 1rem; }
+  .logo { width: 48px; height: 48px; }
+  .header { padding: 0.5rem 0.75rem; }
 }
 </style>
