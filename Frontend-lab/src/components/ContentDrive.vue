@@ -7,7 +7,7 @@
 
     <!-- Panel de información -->
     <div class="info-wrapper">
-      <button class="info-button">
+      <button class="info-button" @click="routeTaken">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;">
           <circle cx="11" cy="11" r="10" stroke="#ffffff" stroke-width="2"/>
           <path d="M7 11h8m0 0l-3-3m3 3l-3 3" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -56,8 +56,17 @@
   </div>
 </template>
 
-<script setup>
-console.log("ContentDrive cargado");
+<script setup>  
+
+import { useRouter } from 'vue-router'
+console.log("ContentDrive cargado")
+
+const router = useRouter()
+
+function routeTaken() { 
+  router.push({ name: 'route-taken' }) // Redirige a la vista de ruta tomada
+}
+
 </script>
 
 <style scoped>

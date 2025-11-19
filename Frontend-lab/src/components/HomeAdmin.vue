@@ -4,28 +4,46 @@
     <header class="admin-header">
       <div class="admin-left">
         <!-- Menú hamburguesa -->
-        <button class="menu-btn">☰</button>
-
+        <button class="menu-btn" @click="showSidebar = true" aria-label="Abrir menú">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="14" fill="#f7f7f7"/>
+            <rect x="7" y="12" width="14" height="2" rx="1" fill="#5f6949"/>
+            <rect x="7" y="16" width="14" height="2" rx="1" fill="#5f6949"/>
+            <rect x="7" y="8" width="14" height="2" rx="1" fill="#5f6949"/>
+          </svg>
+        </button>
         <!-- Avatar + nombre -->
         <img src="/logo.png" alt="Admin" class="admin-avatar" />
         <span class="admin-name">Administrador</span>
       </div>
-
       <!-- Botón cerrar sesión -->
       <button class="logout-btn" @click="cerrarSesion">
         Cerrar sesión
       </button>
     </header>
 
+    <!-- Barra lateral -->
+    <aside class="sidebar" v-if="showSidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Menú</span>
+        <button class="close-btn" @click="showSidebar = false" aria-label="Cerrar menú">
+          &times;
+        </button>
+      </div>
+      <nav class="sidebar-links">
+        <a href="#" class="sidebar-link">Dashboard</a>
+        <a href="#" class="sidebar-link">Usuarios</a>
+        <a href="#" class="sidebar-link">Reportes</a>
+        <a href="#" class="sidebar-link">Configuración</a>
+      </nav>
+    </aside>
+    <div v-if="showSidebar" class="sidebar-backdrop" @click="showSidebar = false"></div>
+
     <!-- Contenido -->
     <main class="admin-main">
       <h2 class="admin-title">Últimos 6 meses</h2>
-
       <div class="admin-grid">
-        <!-- Cuadro -->
         <div class="admin-box"></div>
-
-        <!-- Círculo + botón -->
         <div class="admin-circle-wrapper">
           <div class="admin-circle"></div>
           <button class="calculate-btn">Calcular eficiencia</button>
@@ -36,21 +54,22 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const showSidebar = ref(false)
 
 function cerrarSesion() {
-  // Aquí limpias la sesión / token según tu lógica
   router.push('/') // vuelve al homepage
 }
 </script>
 
 <style scoped>
-/* Contenedor general */
 .admin-container {
   min-height: 100vh;
   background-color: #f4e9da;
+  position: relative;
 }
 
 /* Header */
@@ -72,18 +91,24 @@ function cerrarSesion() {
 }
 
 .menu-btn {
-  font-size: 1.5rem;
-  color: white;
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 50%;
+  transition: background 0.18s;
+  display: flex;
+  align-items: center;
+}
+.menu-btn:hover {
+  background: #eaeaea;
 }
 
 .admin-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  border: 2px solid white;
+  object-fit: contain;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
 }
 
 .admin-name {
@@ -106,6 +131,77 @@ function cerrarSesion() {
   background-color: #e1d5c5;
 }
 
+/* Barra lateral */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: linear-gradient(180deg, #5f6949, #4c553a);
+  color: #fff;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.13);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.2rem 1.2rem 1.2rem;
+  animation: slideInSidebarLeft 0.2s;
+}
+
+@keyframes slideInSidebarLeft {
+  from { left: -260px; opacity: 0; }
+  to { left: 0; opacity: 1; }
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #fff;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.sidebar-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.08rem;
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  transition: background 0.18s;
+}
+
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.18);
+  z-index: 1000;
+}
+
 /* Main */
 .admin-main {
   padding: 2rem;
@@ -126,7 +222,6 @@ function cerrarSesion() {
   align-items: center;
 }
 
-/* Cuadro */
 .admin-box {
   background-color: #5f6949;
   border-radius: 20px;
@@ -135,7 +230,6 @@ function cerrarSesion() {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Círculo */
 .admin-circle-wrapper {
   display: flex;
   flex-direction: column;
@@ -163,5 +257,25 @@ function cerrarSesion() {
 }
 .calculate-btn:hover {
   background-color: #4c553a;
+}
+
+@media (max-width: 900px) {
+  .admin-main {
+    padding: 1rem;
+  }
+  .admin-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+  .admin-box, .admin-circle {
+    height: 220px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .sidebar {
+    width: 80vw;
+    min-width: 180px;
+  }
 }
 </style>
