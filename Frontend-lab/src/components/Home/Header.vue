@@ -14,22 +14,36 @@
     </div>
 
     <div class="actions">
-      <!-- Botón para abrir modal -->
-      <button @click="showLogin = true" class="login-btn" aria-haspopup="dialog">
-        Iniciar sesión
-      </button>
+      <!-- Si está autenticado mostrar logout, si no mostrar iniciar sesión -->
+      <template v-if="auth.token">
+        <button class="login-btn" @click="onLogout">Cerrar sesión</button>
+      </template>
+      <template v-else>
+        <button @click="showLogin = true" class="login-btn" aria-haspopup="dialog">Iniciar sesión</button>
+      </template>
     </div>
 
     <!-- Modal -->
-    <LoginModal v-if="showLogin" @close="showLogin = false" />
+    <LoginModal v-if="showLogin" @close="showLogin = false" @logged-in="onLoggedIn" />
   </header>
 </template>
 
 <script setup>
 import { ref } from "vue"
 import LoginModal from "./LoginModal.vue" // ajusta la ruta si está en otra carpeta
+import { useAuthStore } from '../../stores/auth'
 
 const showLogin = ref(false)
+const auth = useAuthStore()
+auth.initFromStorage()
+
+function onLoggedIn(token) {
+  auth.setToken(token)
+}
+
+function onLogout() {
+  auth.clear()
+}
 </script>
 
 <style scoped>

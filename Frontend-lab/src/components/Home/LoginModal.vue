@@ -13,8 +13,9 @@
         <!-- Formulario -->
         <form @submit.prevent="handleLogin" novalidate>
           <div class="form-group">
-            <label for="email" class="label">Correo</label>
-            <input id="email" ref="emailInput" type="email" v-model="email" placeholder="tucorreo@ejemplo.com" required aria-describedby="email-error" />
+            <label for="email" class="label">Usuario o correo</label>
+            <!-- cambiar a text para aceptar usuario (ej. 'admin') o correo -->
+            <input id="email" ref="emailInput" type="text" v-model="email" placeholder="usuario o correo" required aria-describedby="email-error" />
             <div v-if="emailError" id="email-error" class="error">{{ emailError }}</div>
           </div>
 
@@ -43,8 +44,11 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+import { useRouter } from 'vue-router'
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'logged-in'])
+const router = useRouter()
 
 const modalRef = ref(null)
 const emailInput = ref(null)
@@ -61,11 +65,16 @@ function validate() {
   passwordError.value = ''
   let ok = true
   if (!email.value) {
-    emailError.value = 'Por favor ingresa tu correo.'
+    emailError.value = 'Por favor ingresa tu usuario o correo.'
     ok = false
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    emailError.value = 'Correo inválido.'
-    ok = false
+  } else {
+    // aceptar si es un email válido o un username simple (letras, números, ._- de 3+ chars)
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)
+    const isUser = /^[A-Za-z0-9._-]{3,}$/.test(email.value)
+    if (!isEmail && !isUser) {
+      emailError.value = 'Ingresa un usuario válido (ej. admin) o un correo válido.'
+      ok = false
+    }
   }
   if (!password.value) {
     passwordError.value = 'Por favor ingresa tu contraseña.'
@@ -76,9 +85,47 @@ function validate() {
 
 function handleLogin() {
   if (!validate()) return
-  // Aquí deberías llamar a la API; por ahora solo registro en consola y cierro
-  console.log('Login con:', email.value)
-  emit('close')
+  // Llamada al backend para obtener JWT
+  const payload = {
+    username: email.value,
+    password: password.value
+  }
+
+  fetch('/public/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`Error ${res.status}: ${text}`)
+      }
+      return res.json()
+    })
+      .then((data) => {
+        const token = data.token
+        if (!token) throw new Error('No se recibió token')
+        // Usar store centralizada para token
+        const auth = useAuthStore()
+        auth.setToken(token)
+        // Emitir evento para compatibilidad
+        emit('logged-in', token)
+        // Redirigir a la vista de administrador
+        try {
+          router.push({ name: 'home-admin' })
+        } catch (e) {
+          router.push('/admin')
+        }
+        // Cerrar modal
+        emit('close')
+      })
+    .catch((err) => {
+      console.error('Error al iniciar sesión:', err)
+      passwordError.value = 'Credenciales inválidas o error del servidor.'
+    })
 }
 
 function close() {

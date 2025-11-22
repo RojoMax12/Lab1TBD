@@ -39,7 +39,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // o pon tu frontend si quieres restringirlo
+        // Use allowedOriginPatterns("*") when allowCredentials is true. Using allowedOrigins("*")
+        // together with allowCredentials(true) causes IllegalArgumentException in recent Spring.
+        configuration.setAllowedOriginPatterns(List.of("*")); // o pon tu frontend si quieres restringirlo
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setExposedHeaders(List.of("Authorization"));
