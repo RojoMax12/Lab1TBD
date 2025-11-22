@@ -3,7 +3,7 @@
     <div class="left">
       <div class="logo-container">
         <img src="/logo.png" alt="Logo Trash TBD" class="logo" />
-        <h1 class="site-title">Trash TBD</h1>
+        <h1 class="site-title">CleanOps</h1>
       </div>
 
       <nav class="nav" aria-label="Main navigation">

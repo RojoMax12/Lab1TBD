@@ -6,6 +6,6 @@
 
 
 <script setup>  
-import HomeAdmin from '@/components/HomeAdmin.vue'
+import HomeAdmin from '@/components/Admin/HomeAdmin.vue'
 </script>
 

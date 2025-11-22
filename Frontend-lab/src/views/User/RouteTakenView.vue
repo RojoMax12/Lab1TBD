@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import HomeDriverView from '../components/HomeDrive.vue'
-import RouteTaken from '../components/RouteTaken.vue'
+import HomeDriverView from '@/components/Users/HomeDrive.vue'
+import RouteTaken from '@/components/Users/RouteTaken.vue';
 console.log("RouteTaken cargado");
 </script>

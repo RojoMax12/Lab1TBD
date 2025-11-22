@@ -1,43 +1,8 @@
 <template>
   <div class="admin-container">
-    <!-- Barra superior -->
-    <header class="admin-header">
-      <div class="admin-left">
-        <!-- Menú hamburguesa -->
-        <button class="menu-btn" @click="showSidebar = true" aria-label="Abrir menú">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="14" fill="#f7f7f7"/>
-            <rect x="7" y="12" width="14" height="2" rx="1" fill="#5f6949"/>
-            <rect x="7" y="16" width="14" height="2" rx="1" fill="#5f6949"/>
-            <rect x="7" y="8" width="14" height="2" rx="1" fill="#5f6949"/>
-          </svg>
-        </button>
-        <!-- Avatar + nombre -->
-        <img src="/logo.png" alt="Admin" class="admin-avatar" />
-        <span class="admin-name">Administrador</span>
-      </div>
-      <!-- Botón cerrar sesión -->
-      <button class="logout-btn" @click="cerrarSesion">
-        Cerrar sesión
-      </button>
-    </header>
 
-    <!-- Barra lateral -->
-    <aside class="sidebar" v-if="showSidebar">
-      <div class="sidebar-header">
-        <span class="sidebar-title">Menú</span>
-        <button class="close-btn" @click="showSidebar = false" aria-label="Cerrar menú">
-          &times;
-        </button>
-      </div>
-      <nav class="sidebar-links">
-        <a href="#" class="sidebar-link">Dashboard</a>
-        <a href="#" class="sidebar-link">Usuarios</a>
-        <a href="#" class="sidebar-link">Reportes</a>
-        <a href="#" class="sidebar-link">Configuración</a>
-      </nav>
-    </aside>
-    <div v-if="showSidebar" class="sidebar-backdrop" @click="showSidebar = false"></div>
+    <!-- Header -->
+    <HeaderAdmin/>
 
     <!-- Contenido -->
     <main class="admin-main">
@@ -56,12 +21,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import HeaderAdmin from '@/components/Admin/HeaderAdmin.vue'
 
 const router = useRouter()
 const showSidebar = ref(false)
 
 function cerrarSesion() {
   router.push('/') // vuelve al homepage
+}
+
+function users() {
+  router.push({ name: 'users' })
 }
 </script>
 

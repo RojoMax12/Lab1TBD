@@ -1,8 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
 import HomeView from '../views/HomeView.vue'
-import HomeDriverView from '../views/HomeDriverView.vue'
-import HomeAdminView from '../views/HomeAdminView.vue'
-import RouteTakenView from '../views/RouteTakenView.vue'
+import HomeDriverView from '../views/User/HomeDriverView.vue'
+import HomeAdminView from '../views/AdminView/HomeAdminView.vue'
+import RouteTakenView from '../views/User/RouteTakenView.vue'
+import UsersView from '../views/AdminView/UsersView.vue'
+import ContainersView from '../views/AdminView/ContainerView.vue'
+import RouteView from '../views/AdminView/RouteView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -10,7 +14,10 @@ const router = createRouter({
     { path: '/', name: 'home', component: HomeView },
     { path: '/driver', name: 'home-driver', component: HomeDriverView },
     { path: '/admin', name: 'home-admin', component: HomeAdminView },
-    { path: '/route-taken', name: 'route-taken', component: RouteTakenView }
+    { path: '/route-taken', name: 'route-taken', component: RouteTakenView },
+    { path: '/users', name: 'users', component: UsersView },
+    { path: '/container', name: 'containers', component: ContainersView },
+    { path: '/route', name: 'route', component: RouteView }
   ]
 })
 
