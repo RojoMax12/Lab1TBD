@@ -35,8 +35,7 @@
       </div>
       <nav class="sidebar-links">
         <a href="#" class="sidebar-link" @click="home">Inicio </a>
-        <a href="#" class="sidebar-link">Mi Ruta</a>
-        <a href="#" class="sidebar-link">Historial</a>
+        <a href="#" class="sidebar-link" @click="routeTaken"> Rutas realizadas</a>
         <a href="#" class="sidebar-link">Perfil</a>
       </nav>
     </aside>
@@ -59,6 +58,9 @@ function home() {
   router.push({ name: 'home-driver' })
 }
 
+function routeTaken() {
+  router.push({ name: 'route-taken' })
+}
 </script>
 
 <style scoped>

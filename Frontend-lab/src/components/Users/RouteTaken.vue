@@ -1,38 +1,65 @@
 <template>
   <div class="route-taken-view">
     <h1 class="title">Rutas Tomadas</h1>
+
     <div class="container">
       <div class="horizontal-scroll">
         <table class="route-table">
           <thead>
             <tr>
-              <th>Distancia Total</th>
-              <th>Duración</th>
-              <th>Velocidad Promedio</th>
-              <th>Calorías Quemadas</th>
-              <th>Descripción de la Ruta</th>
+              <th>ID Ruta</th>
+              <th>ID Conductor</th>
+              <th>Fecha</th>
+              <th>Hora Inicio</th>
+              <th>Hora Fin</th>
+              <th>Estado Ruta</th>
+              <th>ID Central</th>
+              <th>ID Punto de Retiro</th>
             </tr>
           </thead>
+
           <tbody>
+            <!-- Ruta Ejemplo 1 -->
             <tr>
-              <td>12.5 km</td>
-              <td>25 min</td>
-              <td>30 km/h</td>
-              <td>200 kcal</td>
-              <td>Esta ruta te llevará a través de hermosos paisajes urbanos y parques locales, ideal para una caminata relajante o un paseo en bicicleta.</td>
+              <td>1</td>
+              <td>12</td>
+              <td>2025-11-12</td>
+              <td>08:30</td>
+              <td>09:10</td>
+              <td>Completada</td>
+              <td>5</td>
+              <td>22</td>
             </tr>
-            <!-- Ejemplo de otra ruta -->
+
+            <!-- Ruta Ejemplo 2 -->
             <tr>
-              <td>8.2 km</td>
-              <td>18 min</td>
-              <td>27 km/h</td>
-              <td>150 kcal</td>
-              <td>Ruta corta por el centro de la ciudad y plazas principales.</td>
+              <td>2</td>
+              <td>7</td>
+              <td>2025-11-10</td>
+              <td>14:00</td>
+              <td>14:45</td>
+              <td>En progreso</td>
+              <td>3</td>
+              <td>31</td>
+            </tr>
+
+            <!-- Ruta Ejemplo 3 -->
+            <tr>
+              <td>3</td>
+              <td>18</td>
+              <td>2025-11-03</td>
+              <td>09:15</td>
+              <td>10:00</td>
+              <td>Cancelada</td>
+              <td>2</td>
+              <td>16</td>
             </tr>
           </tbody>
+
         </table>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -42,7 +69,7 @@
 <style scoped>
 .route-taken-view {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 2rem auto;
   background: #fff;
   border-radius: 1.2rem;
@@ -52,25 +79,21 @@
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: #4e5336;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.6rem;
   text-align: center;
-}
-
-.container {
-  width: 100%;
 }
 
 .horizontal-scroll {
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
 }
 
 .route-table {
   width: 100%;
-  min-width: 800px;
+  min-width: 1000px;
   border-collapse: separate;
   border-spacing: 0;
   background: #fff;
@@ -83,7 +106,7 @@
   text-align: left;
   font-size: 1rem;
   border-bottom: 1px solid #eaeaea;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .route-table th {
@@ -91,8 +114,6 @@
   color: #fff;
   font-weight: 600;
   letter-spacing: 0.2px;
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
 }
 
 .route-table td {
@@ -112,7 +133,7 @@
   }
   .route-table th, .route-table td {
     padding: 0.7rem 0.7rem;
-    font-size: 0.97rem;
+    font-size: 0.95rem;
   }
 }
 </style>

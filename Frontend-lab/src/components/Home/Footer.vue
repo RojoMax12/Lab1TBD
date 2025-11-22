@@ -9,7 +9,7 @@
         <a href="#" class="link">Trabaja con nosotros</a>
       </nav>
 
-      <div class="footer-copy">© <span>{{ year }}</span> Trash TBD</div>
+      <div class="footer-copy">© <span>{{ year }}</span> CleanOps</div>
     </div>
   </footer>
 </template>

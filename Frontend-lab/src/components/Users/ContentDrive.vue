@@ -16,6 +16,9 @@
       </button>
 
       <div class="info-panel">
+        <div class="info-title">
+            <h2>Ruta actual </h2>
+        </div>
         <div class="grid">
           <div>
             <span class="label">Fecha - hora</span>
@@ -70,6 +73,15 @@ function routeTaken() {
 </script>
 
 <style scoped>
+
+.info-title h2 {
+  color: #4a4f37; /* color visible */
+  margin: 0 0 0.6rem 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  font-weight: 700;
+  text-align: center;
+}
 .container {
   display: flex;
   flex-direction: column;
@@ -118,6 +130,8 @@ function routeTaken() {
   justify-content: center;
   align-items: center;
   min-width: 320px;
+  transform: translateY(120px);
+
 }
 
 .map-container img {

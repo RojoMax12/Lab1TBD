@@ -10,8 +10,8 @@
 </template>
 
 <script setup>
-import Header from '../components/Header.vue'
-import Hero from '../components/Hero.vue'
-import Categories from '../components/Categories.vue'
-import Footer from '../components/Footer.vue'
+import Header from '../components/Home/Header.vue'
+import Hero from '../components/Home/Hero.vue'
+import Categories from '../components/Home/Categories.vue'
+import Footer from '../components/Home/Footer.vue'
 </script>
