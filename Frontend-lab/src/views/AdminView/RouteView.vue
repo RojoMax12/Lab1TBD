@@ -256,9 +256,10 @@ function guardarRuta() {
 
 .modal {
   background: white;
-  padding: 20px;
+  padding: 20px ;
   border-radius: 10px;
   width: 420px;
+  color: #333;
 }
 
 .label {

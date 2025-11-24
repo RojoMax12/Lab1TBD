@@ -31,7 +31,7 @@
       <nav class="sidebar-links">
         <a href="#" class="sidebar-link" @click="home">Inicio</a>
         <a href="#" class="sidebar-link" @click="container">Contenedores</a>
-        <a href="#" class="sidebar-link" @click="users">Usuarios</a>
+        <a href="#" class="sidebar-link" @click="users">Conductores</a>
         <a href="#" class="sidebar-link" @click="rutas">Rutas</a>
         <a href="#" class="sidebar-link">Reportes</a>
         <a href="#" class="sidebar-link">Configuración</a>

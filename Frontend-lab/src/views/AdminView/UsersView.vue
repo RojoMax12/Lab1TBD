@@ -5,19 +5,19 @@
 
   <div class="container-worker">
 
-    <h1 class="title">Gestión de Usuarios</h1>
+    <h1 class="title">Gestión de Conductores</h1>
 
     <!-- Botón agregar -->
     <div class="actions-top">
       <button class="btn-add" @click="mostrarModal = true">
-        Agregar usuario
+        Agregar conductor
       </button>
     </div>
 
     <!-- MODAL EMERGENTE -->
     <div v-if="mostrarModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal">
-        <h2>Nuevo Usuario</h2>
+        <h2>Nuevo conductor</h2>
 
         <!-- Campos según UserEntity -->
         <input v-model="nuevoUsuario.name" placeholder="Nombre" />
@@ -63,33 +63,31 @@
 <script setup>
 import { ref } from 'vue'
 import HomeAdminView from '@/components/Admin/HeaderAdmin.vue'
+import { apiFetch } from '@/lib/api.js'
 
 const mostrarModal = ref(false)
 
 /* =============================
-   DATOS DE PRUEBA
+   DATOS DE PRUEBA (serán reemplazados por los creados en backend)
 ============================= */
 const usuarios = ref([
   {
     id: 1,
     name: "Carlos",
     last_name: "González",
-    email: "carlos@example.com",
-    password: "123456"
+    email: "carlos@example.com"
   },
   {
     id: 2,
     name: "María",
     last_name: "López",
-    email: "maria@example.com",
-    password: "abcdef"
+    email: "maria@example.com"
   },
   {
     id: 3,
-    name: "Jorge",
-    last_name: "Pérez",
-    email: "jorge@example.com",
-    password: "password123"
+    name: "Ana",
+    last_name: "Martínez",
+    email: "ana@example.com"
   }
 ])
 
@@ -101,24 +99,54 @@ const nuevoUsuario = ref({
   password: ''
 })
 
+const saving = ref(false)
+const errorMsg = ref('')
+
 function cerrarModal() {
   mostrarModal.value = false
+  errorMsg.value = ''
 }
 
-function guardarUsuario() {
-  usuarios.value.push({
-    id: usuarios.value.length + 1,
-    ...nuevoUsuario.value
-  })
-
-  nuevoUsuario.value = {
-    name: '',
-    last_name: '',
-    email: '',
-    password: ''
+async function guardarUsuario() {
+  errorMsg.value = ''
+  // Validación mínima
+  if (!nuevoUsuario.value.email || !nuevoUsuario.value.password || !nuevoUsuario.value.name) {
+    errorMsg.value = 'Nombre, email y contraseña son obligatorios.'
+    return
   }
 
-  mostrarModal.value = false
+  saving.value = true
+  try {
+    // Llamada al backend para crear driver y recibir token/id
+    const payload = {
+      name: nuevoUsuario.value.name,
+      last_name: nuevoUsuario.value.last_name,
+      email: nuevoUsuario.value.email,
+      password: nuevoUsuario.value.password
+    }
+
+    const res = await apiFetch('/api/drivers/', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+
+    // res expected { id, token }
+    usuarios.value.push({
+      id: res.id || usuarios.value.length + 1,
+      name: nuevoUsuario.value.name,
+      last_name: nuevoUsuario.value.last_name,
+      email: nuevoUsuario.value.email
+    })
+
+    // reset
+    nuevoUsuario.value = { name: '', last_name: '', email: '', password: '' }
+    mostrarModal.value = false
+  } catch (err) {
+    console.error('Error al crear usuario:', err)
+    errorMsg.value = err.message || 'Error al crear usuario en el servidor.'
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
@@ -187,6 +215,7 @@ function guardarUsuario() {
   border-bottom: 1px solid #ddd;
   text-align: center;
   background: white;
+  color: #333;
 }
 
 .row-actions {

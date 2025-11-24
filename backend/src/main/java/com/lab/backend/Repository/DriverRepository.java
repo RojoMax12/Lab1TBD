@@ -20,7 +20,8 @@ public class DriverRepository {
     //CRUD Operations
 
     public DriverEntity CreateDriver(DriverEntity driverEntity) {
-        String sql = "INSERT INTO drivers (name, license_number, phone_number) VALUES (:name, :license_number, :phone_number)";
+        // Let the database generate the id (serial). Do not include id in INSERT.
+        String sql = "INSERT INTO driver (name, last_name, email, password) VALUES (:name, :last_name, :email, :password)";
         Connection connection = null;
         try {
             connection = sql2o.open();
@@ -31,9 +32,10 @@ public class DriverRepository {
                 .addParameter("password", driverEntity.getPassword())
                 .executeUpdate()
                 .getKey(Long.class);
+            driverEntity.setId(id);
             return driverEntity;
         } catch (Sql2oException e) {
-            System.err.println("Error al insertar el driver");
+            System.err.println("Error al insertar el driver: " + e.getMessage());
             throw new RuntimeException("No se pudo crear el driver");
         } finally {
             if (connection != null) {
@@ -43,7 +45,7 @@ public class DriverRepository {
     }
 
     public List<DriverEntity> getAllDrivers() {
-        String sql = "SELECT * FROM drivers";
+        String sql = "SELECT * FROM driver";
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql)
                 .executeAndFetch(DriverEntity.class);
@@ -54,7 +56,7 @@ public class DriverRepository {
     }
 
     public DriverEntity getDriverById(int id) {
-        String sql = "SELECT * FROM drivers WHERE id = :id";
+        String sql = "SELECT * FROM driver WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql)
                 .addParameter("id", id)
@@ -65,8 +67,20 @@ public class DriverRepository {
         }
     }
 
+    public DriverEntity getDriverByEmail(String email) {
+        String sql = "SELECT * FROM driver WHERE email = :email";
+        try (Connection connection = sql2o.open()) {
+            return connection.createQuery(sql)
+                .addParameter("email", email)
+                .executeAndFetchFirst(DriverEntity.class);
+        } catch (Sql2oException e) {
+            System.err.println("Error al obtener el driver por email");
+            throw new RuntimeException("No se pudo obtener el driver");
+        }
+    }
+
     public void updateDriver(int id, DriverEntity driverEntity) {
-        String sql = "UPDATE drivers SET name = :name, license_number = :license_number, phone_number = :phone_number WHERE id = :id";
+        String sql = "UPDATE driver SET name = :name, last_name = :last_name, email = :email, password = :password WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             connection.createQuery(sql)
                 .addParameter("name", driverEntity.getName())
@@ -81,7 +95,7 @@ public class DriverRepository {
     }
 
     public void deleteDriver(int id) {
-        String sql = "DELETE FROM drivers WHERE id = :id";
+        String sql = "DELETE FROM driver WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             connection.createQuery(sql)
                 .addParameter("id", id)

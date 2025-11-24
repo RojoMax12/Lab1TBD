@@ -20,7 +20,7 @@ public class DriverController {
         return driverServices.CreateDriver(driverEntity);
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public List<DriverEntity> getAllDrivers() {
         return driverServices.getAllDrivers();
     }
