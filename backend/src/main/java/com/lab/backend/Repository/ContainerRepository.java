@@ -17,8 +17,10 @@ public class ContainerRepository {
         this.sql2o = sql2o;
     }
 
+    //CRUD Operations
+
     public ContainerEntity CreateContainer(ContainerEntity containerEntity) {
-        String sql = "INSERT INTO containers (id_waste, coord_x, coord_y, weight, status) VALUES (:id_waste, :coord_x, :coord_y, :weight, :status)";
+        String sql = "INSERT INTO container (id_waste, coord_x, coord_y, weight, status) VALUES (:id_waste, :coord_x, :coord_y, :weight, :status)";
         Connection connection = null;
         try {
             connection = sql2o.open();
@@ -42,6 +44,60 @@ public class ContainerRepository {
 
 
 
+        }
+    }
+
+    public Void DeleteContainer(Long id) {
+        String sql = "DELETE FROM container WHERE id = :id";
+        try (Connection connection = sql2o.open()) {
+            connection.createQuery(sql)
+                    .addParameter("id", id)
+                    .executeUpdate();
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error al eliminar el container");
+            throw new RuntimeException("No se pudo eliminar el container");
+        }
+    }
+
+    public Void UpdateContainer(Long id, ContainerEntity containerEntity) {
+        String sql = "UPDATE container SET id_waste = :id_waste, coord_x = :coord_x, coord_y = :coord_y, weight = :weight, status = :status WHERE id = :id";
+        try (Connection connection = sql2o.open()) {
+            connection.createQuery(sql)
+                    .addParameter("id_waste", containerEntity.getId_waste())
+                    .addParameter("coord_x", containerEntity.getCoord_x())
+                    .addParameter("coord_y", containerEntity.getCoord_y())
+                    .addParameter("weight", containerEntity.getWeight())
+                    .addParameter("status", containerEntity.getStatus())
+                    .addParameter("id", containerEntity.getId())
+                    .executeUpdate();
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error al actualizar el container");
+            throw new RuntimeException("No se pudo actualizar el container");
+        }
+    }
+
+    public List<ContainerEntity> GetAllContainers() {
+        String sql = "SELECT * FROM container";
+        try (Connection connection = sql2o.open()) {
+            return connection.createQuery(sql)
+                    .executeAndFetch(ContainerEntity.class);
+        } catch (Exception e) {
+            System.err.println("Error al obtener los containers");
+            throw new RuntimeException("No se pudieron obtener los containers");
+        }
+    }
+
+    public ContainerEntity GetContainerById(Long id) {
+        String sql = "SELECT * FROM container WHERE id = :id";
+        try (Connection connection = sql2o.open()) {
+            return connection.createQuery(sql)
+                    .addParameter("id", id)
+                    .executeAndFetchFirst(ContainerEntity.class);
+        } catch (Exception e) {
+            System.err.println("Error al obtener el container por ID");
+            throw new RuntimeException("No se pudo obtener el container por ID");
         }
     }
 

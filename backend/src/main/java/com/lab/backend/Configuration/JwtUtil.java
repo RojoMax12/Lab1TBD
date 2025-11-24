@@ -12,7 +12,9 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // Usa una clave secreta fija y suficientemente larga
+    private static final String SECRET = "mi_clave_super_secreta_para_jwt_1234567890";
+    private final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     public String generateToken(String username) {
         return Jwts.builder()

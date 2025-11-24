@@ -68,7 +68,6 @@ function validate() {
     emailError.value = 'Por favor ingresa tu usuario o correo.'
     ok = false
   } else {
-    // aceptar si es un email válido o un username simple (letras, números, ._- de 3+ chars)
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)
     const isUser = /^[A-Za-z0-9._-]{3,}$/.test(email.value)
     if (!isEmail && !isUser) {
@@ -83,49 +82,50 @@ function validate() {
   return ok
 }
 
-function handleLogin() {
+async function handleLogin() {
   if (!validate()) return
-  // Llamada al backend para obtener JWT
   const payload = {
     username: email.value,
     password: password.value
   }
 
-  fetch('/public/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  })
-    .then(async (res) => {
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(`Error ${res.status}: ${text}`)
-      }
-      return res.json()
+  try {
+    // Usa la URL absoluta para evitar problemas de CORS/proxy en desarrollo
+    const res = await fetch('http://localhost:8080/public/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
-      .then((data) => {
-        const token = data.token
-        if (!token) throw new Error('No se recibió token')
-        // Usar store centralizada para token
-        const auth = useAuthStore()
-        auth.setToken(token)
-        // Emitir evento para compatibilidad
-        emit('logged-in', token)
-        // Redirigir a la vista de administrador
-        try {
-          router.push({ name: 'home-admin' })
-        } catch (e) {
-          router.push('/admin')
-        }
-        // Cerrar modal
-        emit('close')
-      })
-    .catch((err) => {
-      console.error('Error al iniciar sesión:', err)
-      passwordError.value = 'Credenciales inválidas o error del servidor.'
-    })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Error ${res.status}: ${text}`)
+    }
+    const data = await res.json()
+    const token = data.token
+    if (!token) throw new Error('No se recibió token')
+
+    // Guarda el token en el store y en localStorage
+    const auth = useAuthStore()
+    auth.setToken(token)
+    localStorage.setItem('jwt', token)
+
+    emit('logged-in', token)
+    // Redirigir a la vista de administrador
+    try {
+      router.push({ name: 'home-admin' })
+    } catch (e) {
+      router.push('/admin')
+    }
+    emit('close')
+    // Limpia campos y errores
+    email.value = ''
+    password.value = ''
+    emailError.value = ''
+    passwordError.value = ''
+  } catch (err) {
+    console.error('Error al iniciar sesión:', err)
+    passwordError.value = 'Credenciales inválidas o error del servidor.'
+  }
 }
 
 function close() {
@@ -158,7 +158,6 @@ function onKeydown(e) {
 
 onMounted(async () => {
   await nextTick()
-  // focus inicial
   if (emailInput.value) emailInput.value.focus()
   document.addEventListener('keydown', onKeydown)
 })

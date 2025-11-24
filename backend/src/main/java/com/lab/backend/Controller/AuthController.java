@@ -23,6 +23,9 @@ public class AuthController {
 
         if ("admin".equals(username) && "1234".equals(password)) {
             String token = jwtUtil.generateToken(username);
+
+            System.out.println(token);
+
             return Map.of("token", token);
         }
 

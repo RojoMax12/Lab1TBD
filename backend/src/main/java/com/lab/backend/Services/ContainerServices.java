@@ -1,5 +1,6 @@
 package com.lab.backend.Services;
 
+import com.lab.backend.Entities.ContainerEntity;
 import com.lab.backend.Repository.ContainerRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,29 @@ public class ContainerServices {
         this.containerRepository = containerRepository;
     }
 
+    public ContainerEntity CreateContainer(ContainerEntity container) {
+        return containerRepository.CreateContainer(container);
+    }
+
+    public List<ContainerEntity> getAllContainers() {
+
+        return containerRepository.GetAllContainers();
+    }
+
+    public ContainerEntity getContainerById(Long id) {
+
+        return containerRepository.GetContainerById(id);
+    }
+
+    public void updateContainer(Long id, ContainerEntity container) {
+        containerRepository.UpdateContainer(id, container);
+    }
+
+    public void deleteContainer(Long id) {
+
+        containerRepository.DeleteContainer(id);
+    }
+
     public List<Map<String, Object>> getProblematicContainersReport() {
         return containerRepository.getProblematicContainers();
     }
@@ -26,5 +50,7 @@ public class ContainerServices {
     public List<Map<String, Object>> getContenedoresSinRecoleccionReciente() {
         return containerRepository.getContenedoresSinRecoleccionReciente();
     }
+
+    
 
 }
