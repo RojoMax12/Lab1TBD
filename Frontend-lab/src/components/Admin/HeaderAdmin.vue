@@ -1,71 +1,141 @@
 <template>
-    <header class="admin-header">
-      <div class="admin-left">
-        <!-- Menú hamburguesa -->
-        <button class="menu-btn" @click="showSidebar = true" aria-label="Abrir menú">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="14" fill="#f7f7f7"/>
-            <rect x="7" y="12" width="14" height="2" rx="1" fill="#5f6949"/>
-            <rect x="7" y="16" width="14" height="2" rx="1" fill="#5f6949"/>
-            <rect x="7" y="8" width="14" height="2" rx="1" fill="#5f6949"/>
-          </svg>
-        </button>
-        <!-- Avatar + nombre -->
-        <img src="/logo.png" alt="Admin" class="admin-avatar" />
-        <span class="admin-name">Administrador</span>
-      </div>
-      <!-- Botón cerrar sesión -->
-      <button class="logout-btn" @click="cerrarSesion">
-        Cerrar sesión
-      </button>
-    </header>
+  <header class="admin-header">
+    <div class="admin-left">
 
-    <!-- Barra lateral -->
-    <aside class="sidebar" v-if="showSidebar">
-      <div class="sidebar-header">
-        <span class="sidebar-title">Menú</span>
-        <button class="close-btn" @click="showSidebar = false" aria-label="Cerrar menú">
-          &times;
-        </button>
-      </div>
-      <nav class="sidebar-links">
-        <a href="#" class="sidebar-link" @click="home">Inicio</a>
-        <a href="#" class="sidebar-link" @click="container">Contenedores</a>
-        <a href="#" class="sidebar-link" @click="users">Conductores</a>
-        <a href="#" class="sidebar-link" @click="rutas">Rutas</a>
-        <a href="#" class="sidebar-link">Reportes</a>
-        <a href="#" class="sidebar-link">Configuración</a>
-      </nav>
-    </aside>
-    <div 
-      v-if="showSidebar" class="sidebar-backdrop" @click="showSidebar = false">
+      <!-- Botón menú -->
+      <button class="menu-btn" @click="showSidebar = true" aria-label="Abrir menú">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="14" fill="#f7f7f7"/>
+          <rect x="7" y="12" width="14" height="2" rx="1" fill="#5f6949"/>
+          <rect x="7" y="16" width="14" height="2" rx="1" fill="#5f6949"/>
+          <rect x="7" y="8" width="14" height="2" rx="1" fill="#5f6949"/>
+        </svg>
+      </button>
+
+      <img src="/logo.png" alt="Admin" class="admin-avatar" />
+
+      <!-- Muestra nombre y apellido -->
+      <span class="admin-name">{{ fullName }}</span>
     </div>
+
+    <button class="logout-btn" @click="cerrarSesion()">
+      Cerrar sesión
+    </button>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" v-if="showSidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Menú</span>
+      <button class="close-btn" @click="showSidebar = false">&times;</button>
+    </div>
+
+    <nav class="sidebar-links">
+      <a class="sidebar-link" @click="home()">Inicio</a>
+      <a class="sidebar-link" @click="container()">Contenedores</a>
+      <a class="sidebar-link" @click="users()">Conductores</a>
+      <a class="sidebar-link" @click="rutas()">Rutas</a>
+    </nav>
+  </aside>
+
+  <div v-if="showSidebar" class="sidebar-backdrop" @click="showSidebar = false"></div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
+<script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
+import { jwtDecode } from "jwt-decode"
+import AdminServices from '@/services/adminservices'
 
 const router = useRouter()
-const showSidebar = ref(false)
 
+const showSidebar = ref(false)
+const userEmail = ref(null)
+
+const name = ref('')
+const lastname = ref('')
+
+/* ============================
+     DECODIFICAR TOKEN
+============================ */
+onMounted(() => {
+  const token = localStorage.getItem('jwt')
+
+  if (!token) return
+
+  try {
+    const decoded = jwtDecode(token)
+    console.log("TOKEN DECODIFICADO:", decoded)
+
+    userEmail.value = decoded.sub || decoded.email || null
+
+    if (userEmail.value != null) {
+      getAdminData(userEmail.value)   // <--- OBTENER NOMBRE Y APELLIDO
+    }
+  } catch (error) {
+    console.error("Error al decodificar token:", error)
+  }
+})
+
+/* ============================
+    OBTENER ADMIN POR EMAIL
+============================ */
+async function getAdminData(email) {
+    try {
+        console.log("Obteniendo admin con email:", email)
+        const response = await AdminServices.getAdminByEmail(email)
+
+        // Imprimir toda la respuesta
+        console.log("Respuesta de la API:", response)
+
+        // Asegúrate de que la respuesta tenga los campos correctos
+        const admin = response.data
+        console.log("Datos del admin:", admin)
+
+        name.value = admin.name
+        lastname.value = admin.last_name
+    } catch (err) {
+        console.error("Error obteniendo admin:", err)
+    }
+}
+
+/* ============================
+    NOMBRE COMPLETO COMPUTADO
+============================ */
+const fullName = computed(() =>
+  name.value && lastname.value
+    ? `${name.value} ${lastname.value}`
+    : userEmail.value || "Administrador"
+)
+
+/* ============================
+        NAVEGACIÓN
+============================ */
 function cerrarSesion() {
-  router.push('/') // vuelve al homepage
+  const auth = useAuthStore()
+  auth.setToken(null)
+  localStorage.removeItem('jwt')
+  router.push('/')
 }
 
 function home() {
+  showSidebar.value = false
   router.push({ name: 'home-admin' })
 }
 
 function users() {
+  showSidebar.value = false
   router.push({ name: 'users' })
 }
 
 function container() {
+  showSidebar.value = false
   router.push({ name: 'containers' })
 }
 
 function rutas() {
+  showSidebar.value = false
   router.push({ name: 'route' })
 }
 </script>

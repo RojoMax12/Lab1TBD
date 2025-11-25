@@ -21,7 +21,7 @@ public class DriverRepository {
 
     public DriverEntity CreateDriver(DriverEntity driverEntity) {
         // Let the database generate the id (serial). Do not include id in INSERT.
-        String sql = "INSERT INTO driver (name, last_name, email, password) VALUES (:name, :last_name, :email, :password)";
+        String sql = "INSERT INTO driver (name, last_name, email, password, role) VALUES (:name, :last_name, :email, :password, :role   )";
         Connection connection = null;
         try {
             connection = sql2o.open();
@@ -30,6 +30,7 @@ public class DriverRepository {
                 .addParameter("last_name", driverEntity.getLast_name())
                 .addParameter("email", driverEntity.getEmail())
                 .addParameter("password", driverEntity.getPassword())
+                .addParameter("role", "driver")
                 .executeUpdate()
                 .getKey(Long.class);
             driverEntity.setId(id);

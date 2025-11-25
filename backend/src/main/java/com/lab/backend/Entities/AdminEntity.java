@@ -1,7 +1,6 @@
 package com.lab.backend.Entities;
 
-
-public class DriverEntity {
+public class AdminEntity {
     private Long id;
     private String name;
     private String last_name;

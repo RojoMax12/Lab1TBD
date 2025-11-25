@@ -1,251 +1,206 @@
 <template>
+  <div>
+    <HeaderAdmin />
+  </div>
+  
   <div class="admin-container">
-
     <!-- Header -->
-    <HeaderAdmin/>
+
 
     <!-- Contenido -->
     <main class="admin-main">
-      <h2 class="admin-title">Últimos 6 meses</h2>
-      <div class="admin-grid">
-        <div class="admin-box"></div>
-        <div class="admin-circle-wrapper">
-          <div class="admin-circle"></div>
-          <button class="calculate-btn">Calcular eficiencia</button>
+      <h1 class="admin-title">Panel de administración</h1>
+      <div class="efficiency-section">
+        <h2 class="admin-title">Últimos 6 meses</h2>
+        <button class="calculate-btn" @click="calculateEfficiency">
+          Calcular eficiencia
+        </button>
+
+        <div class="admin-grid">
+          <div class="admin-box">
+            <div class="grid-header">
+              <div>Nombre conductor</div>
+              <div>Apellido conductor</div>
+              <div>Tiempo promedio (Horas)</div>
+            </div>
+
+            <div class="scrollable-table">
+              <div class="grid-row" v-for="item in efficiency" :key="item.driver_id">
+                <div>{{ item.driver_name }}</div>
+                <div>{{ item.driver_last_name }}</div>
+                <div>{{ item.average_time_hours }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="waste-performance">
+        <h2 class="admin-title">Desempeño de residuos recogidos</h2>
+        <button class="calculate-btn" @click="fetchWastePerformance">
+          Obtener desempeño
+        </button>
+
+        <div class="admin-grid">
+          <div class="admin-box">
+            <div class="grid-header">
+              <div>Nombre conductor</div>
+              <div>Apellido conductor</div>
+              <div>Cantidad de residuos (kg)</div>
+            </div>
+
+            <div class="scrollable-table">
+              <div class="grid-row" v-for="item in Wasteperformance" :key="item.driver_id">
+                <div>{{ item.driver_name }}</div>
+                <div>{{ item.driver_last_name }}</div>
+                <div>{{ item.total_waste_kg }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import HeaderAdmin from '@/components/Admin/HeaderAdmin.vue'
+import routeServices from '@/services/routeservices'
 
 const router = useRouter()
-const showSidebar = ref(false)
+const efficiency = ref([])
+const Wasteperformance = ref([])
 
-function cerrarSesion() {
-  router.push('/') // vuelve al homepage
+// Function to fetch efficiency data
+function calculateEfficiency() {
+  routeServices.efficiency()
+    .then(response => {
+      efficiency.value = response.data
+    })
+    .catch(error => {
+      console.error("Error al calcular eficiencia:", error)
+    })
 }
 
-function users() {
-  router.push({ name: 'users' })
+function fetchWastePerformance() {
+  routeServices.wasteperformance()
+    .then(response => {
+      Wasteperformance.value = response.data
+      console.log("Desempeño de residuos:", Wasteperformance.value)
+    })
+    .catch(error => {
+      console.error("Error al obtener desempeño de residuos:", error)
+    })
 }
 </script>
 
 <style scoped>
+/* General page styles */
 .admin-container {
   min-height: 100vh;
   background-color: #f4e9da;
-  position: relative;
+  padding: 20px;
 }
 
-/* Header */
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #5f6949;
-  padding: 1rem 1.5rem;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.admin-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.menu-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.2rem;
-  border-radius: 50%;
-  transition: background 0.18s;
-  display: flex;
-  align-items: center;
-}
-.menu-btn:hover {
-  background: #eaeaea;
-}
-
-.admin-avatar {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
-}
-
-.admin-name {
-  color: white;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.logout-btn {
-  background-color: #f4e9da;
-  color: black;
-  font-weight: 500;
-  padding: 0.5rem 1.25rem;
-  border-radius: 25px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-.logout-btn:hover {
-  background-color: #e1d5c5;
-}
-
-/* Barra lateral */
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 240px;
-  height: 100vh;
-  background: linear-gradient(180deg, #5f6949, #4c553a);
-  color: #fff;
-  box-shadow: 2px 0 16px rgba(0,0,0,0.13);
-  z-index: 1001;
-  display: flex;
-  flex-direction: column;
-  padding: 2rem 1.2rem 1.2rem 1.2rem;
-  animation: slideInSidebarLeft 0.2s;
-}
-
-@keyframes slideInSidebarLeft {
-  from { left: -260px; opacity: 0; }
-  to { left: 0; opacity: 1; }
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.sidebar-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #fff;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.sidebar-links {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-}
-
-.sidebar-link {
-  color: #fff;
-  text-decoration: none;
-  font-size: 1.08rem;
-  font-weight: 500;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  transition: background 0.18s;
-}
-
-.sidebar-link:hover {
-  background: rgba(255,255,255,0.12);
-}
-
-.sidebar-backdrop {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.18);
-  z-index: 1000;
-}
-
-/* Main */
-.admin-main {
-  padding: 2rem;
-}
-
+/* Main title */
 .admin-title {
-  color: #000000;
   text-align: center;
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 2.5rem;
+  color: #4a4f37;
+  margin-bottom: 25px;
 }
 
-.admin-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: center;
+/* Efficiency section styles */
+.efficiency-section {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  padding-bottom: 40px;
+  width: 1000px;
+  position: relative;
+  right: -200px;
+
 }
 
-.admin-box {
-  background-color: #5f6949;
-  border-radius: 20px;
-  width: 100%;
-  height: 350px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.admin-circle-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.admin-circle {
-  background-color: #5f6949;
-  border-radius: 50%;
-  width: 350px;
-  height: 350px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
+/* Button style */
 .calculate-btn {
-  margin-top: 1.5rem;
+  margin-top: 20px;
   background-color: #5f6949;
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 10px 20px;
   border-radius: 25px;
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  transition: background 0.3s ease;
+  position: relative;
+  right: -760px;
+  top: -20px;
+  
 }
+
 .calculate-btn:hover {
   background-color: #4c553a;
 }
 
+/* Table styling */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* One column */
+  gap: 20px;
+  justify-items: center;
+  align-items: start;
+}
+
+.admin-box {
+  background-color: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.grid-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* Three equally spaced columns */
+  background: #5f6949;
+  color: white;
+  padding: 12px 16px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* Same as header */
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+  background: #f9f9f9;
+  color: #333;
+}
+
+.scrollable-table {
+  max-height: 300px; /* Set a max height */
+  overflow-y: auto; /* Scrollable */
+  margin-top: 16px;
+}
+
+/* Responsive design for smaller screens */
 @media (max-width: 900px) {
-  .admin-main {
-    padding: 1rem;
-  }
   .admin-grid {
     grid-template-columns: 1fr;
-    gap: 1.2rem;
   }
-  .admin-box, .admin-circle {
-    height: 220px;
+  
+  .admin-box {
     width: 100%;
-    max-width: 320px;
-    margin: 0 auto;
-  }
-  .sidebar {
-    width: 80vw;
-    min-width: 180px;
+    max-width: 100%;
   }
 }
 </style>

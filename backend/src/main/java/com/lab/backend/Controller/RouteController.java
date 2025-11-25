@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/Route")
+@RequestMapping("/api/route")
 public class RouteController {
 
     private final RouteServices routeService;
@@ -23,7 +23,7 @@ public class RouteController {
         public Long idPickUpPoint;
     }
 
-    @PostMapping("/PlanificarRuta")
+    @PostMapping("/planroute")
     public String planificarRuta(@RequestBody PlanificarRutaRequest request) {
         try {
             routeService.planificarRuta(
@@ -38,7 +38,7 @@ public class RouteController {
         }
     }
 
-    @GetMapping("/inefficient")
+    @GetMapping("/inefficient-routes")
     public ResponseEntity<List<Map<String, Object>>> getInefficientRoutes() {
         List<Map<String, Object>> inefficientRoutes = routeService.findInefficientRoutes();
         return ResponseEntity.ok(inefficientRoutes);
@@ -50,7 +50,7 @@ public class RouteController {
         return ResponseEntity.ok(efficiency);
     }
 
-    @GetMapping("/wastePerformance")
+    @GetMapping("/waste-performance")
     public ResponseEntity<List<Map<String, Object>>> compareWastePerformance() {
         List<Map<String, Object>> result = routeService.compareWastePerformance();
         return ResponseEntity.ok(result);

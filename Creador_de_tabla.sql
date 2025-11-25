@@ -24,7 +24,17 @@ CREATE TABLE driver (
                         name VARCHAR(100) NOT NULL,
                         last_name VARCHAR(100) NOT NULL,
                         email VARCHAR(150) UNIQUE NOT NULL,
-                        password VARCHAR(150) NOT NULL
+                        password VARCHAR(150) NOT NULL,
+                        role VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE admin (
+                        id BIGSERIAL PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        last_name VARCHAR(100) NOT NULL,
+                        email VARCHAR(150) UNIQUE NOT NULL,
+                        password VARCHAR(150) NOT NULL,
+                        role VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE pickuppoint (
@@ -81,9 +91,13 @@ INSERT INTO container (id_waste, coord_x, coord_y, weight, status) VALUES
                                                                        (1, 22.0, 34.0, 68.0, 'Disponible');
 
 -- Conductores
-INSERT INTO driver (name, last_name, email, password) VALUES
-                                                          ('Juan', 'Pérez', 'juan.perez@mail.com', '1234'),
-                                                          ('Ana', 'Gómez', 'ana.gomez@mail.com', 'abcd');
+INSERT INTO driver (name, last_name, email, password, role) VALUES
+                                                          ('Juan', 'Pérez', 'juan.perez@mail.com', '1234', 'driver'),
+                                                          ('Ana', 'Gómez', 'ana.gomez@mail.com', 'abcd', 'driver');
+
+-- Administradores
+INSERT INTO admin (name, last_name, email, password, role) VALUES
+                                                        ('Carlos', 'López', 'carlos.lopez@mail.com', 'pass123', 'admin');
 
 -- Puntos de recolección
 INSERT INTO pickuppoint (name, coord_x, coord_y) VALUES
