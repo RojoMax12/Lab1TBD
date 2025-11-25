@@ -49,6 +49,7 @@
       <div>Acciones</div>
     </div>
 
+    <div class = "scrollable-table">
     <div
       v-for="contenedor in contenedores"
       :key="contenedor.id"
@@ -63,9 +64,64 @@
       <div class="row-actions">
         <button class="btn-edit" @click="abrirModalEditar(contenedor)">Editar</button>
         <button class="btn-delete" @click="eliminarContenedor(contenedor.id)">Eliminar</button>
+        </div>
       </div>
     </div>
   </div>
+
+  <div class="container-wrapper2">
+    <h1 class  = "title">Contenedores sin recolección</h1>
+
+     <div class="grid-header">
+      <div>ID</div>
+      <div>Coord X</div>
+      <div>Coord Y</div>
+      <div>Estado</div>
+      <div>Tipo de residuo</div>
+    </div>
+
+    <div class = "scrollable-table">
+      <div
+        v-for="contenedorsinrecolectar in contenedoressinrecolectar"
+        :key="contenedorsinrecolectar.id"
+        class="grid-row"
+      >
+        <div>{{ contenedorsinrecolectar.id_contenedor }}</div>
+        <div>{{ contenedorsinrecolectar.coord_x }}</div>
+        <div>{{ contenedorsinrecolectar.coord_y }}</div>
+        <div>{{ contenedorsinrecolectar.ultima_recoleccion }}</div>
+        <div>{{ contenedorsinrecolectar.tipo_residuo }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class = "container-wrapper3">
+    <h1 class  = "title">Contenedores  con problemas</h1>
+     
+      <div class="grid-header">
+        <div>ID</div>
+        <div>Coord X</div>
+        <div>Coord Y</div>
+        <div>Estado</div>
+        <div>Tipo de residuo</div>
+      </div>
+    
+    <div class = "scrollable-table">
+      <div
+        v-for="contenedorproblema in contenedoresconproblemas"
+        :key="contenedorproblema.id"
+        class="grid-row"
+      >
+        <div>{{ contenedorproblema.id_contenedor }}</div>
+        <div>{{ contenedorproblema.coord_x }}</div>
+        <div>{{ contenedorproblema.coord_y }}</div>
+        <div>{{ contenedorproblema.status }}</div>
+        <div>{{ contenedorproblema.tipo_residuo }}</div>
+      </div>
+    </div>
+  </div>
+
+
 </template>
 
 <script>
@@ -82,6 +138,8 @@ export default {
     const mostrarModal = ref(false)
     const editando = ref(false)
     const contenedores = ref([])
+    const contenedoressinrecolectar = ref([])
+    const contenedoresconproblemas = ref([])
     const nuevoContenedor = ref({
       id: null,
       id_waste: '',
@@ -102,7 +160,36 @@ export default {
         })
     }
 
-    onMounted(obtenerContenedores)
+    const obtenerContenedoresConProblemas = () => {
+      containerServices.ContainerWithProblems()
+        .then(response => {
+          contenedoresconproblemas.value = response.data
+          console.log("contenedores con problemaas",response.data)
+        })
+        .catch(error => {
+          console.error("Error al obtener contenedores con problemas:", error)
+        })
+    }
+
+    
+
+    const obtenerContenedoresSinRecolectar = () => {
+      containerServices.ContainersWithoutCollection()
+        .then(response => {
+          contenedoressinrecolectar.value = response.data
+          console.log(response.data)
+        })
+        .catch(error => {
+          console.error("Error al obtener contenedores sin recolección:", error)
+        })
+    }
+
+  
+    onMounted(() => {
+      obtenerContenedores()
+      obtenerContenedoresSinRecolectar()
+      obtenerContenedoresConProblemas()
+    })
 
     // Abrir modal para nuevo
     const abrirModalNuevo = () => {
@@ -130,6 +217,8 @@ export default {
       containerServices.createContainer(nuevoContenedor.value)
         .then(() => {
           obtenerContenedores()
+          obtenerContenedoresSinRecolectar()
+          obtenerContenedoresConProblemas()
           cerrarModal()
         })
         .catch(error => {
@@ -171,6 +260,8 @@ export default {
       mostrarModal,
       editando,
       contenedores,
+      contenedoressinrecolectar,
+      contenedoresconproblemas,
       nuevoContenedor,
       abrirModalNuevo,
       abrirModalEditar,
@@ -185,6 +276,24 @@ export default {
 
 <style scoped>
 .container-wrapper {
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 1000px;
+  margin: 40px auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.container-wrapper2 {
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 1000px;
+  margin: 40px auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.container-wrapper3 {
   background-color: #f9f9f9;
   padding: 25px;
   border-radius: 12px;
@@ -282,11 +391,13 @@ export default {
 }
 
 .modal {
-  background: white;
+  background: rgb(255, 255, 255);
   padding: 25px;
   width: 380px;
   border-radius: 12px;
   box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  color: #000000;
+  text-align: center;
 }
 
 .modal input, .modal select {
@@ -317,4 +428,10 @@ export default {
   border-radius: 6px;
   border: none;
 }
+
+.scrollable-table {
+  max-height: 300px; /* Ajusta la altura máxima según lo que necesites */
+  overflow-y: auto;  /* Muestra el scroll cuando la tabla sea más alta que el contenedor */
+}
+
 </style>

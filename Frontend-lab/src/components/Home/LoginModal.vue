@@ -14,7 +14,6 @@
         <form @submit.prevent="handleLogin" novalidate>
           <div class="form-group">
             <label for="email" class="label">Usuario o correo</label>
-            <!-- cambiar a text para aceptar usuario (ej. 'admin') o correo -->
             <input id="email" ref="emailInput" type="text" v-model="email" placeholder="usuario o correo" required aria-describedby="email-error" />
             <div v-if="emailError" id="email-error" class="error">{{ emailError }}</div>
           </div>
@@ -23,7 +22,7 @@
             <label for="password" class="label">Contraseña</label>
             <div class="password-container">
               <input id="password" :type="showPassword ? 'text' : 'password'" v-model="password" placeholder="Contraseña" required aria-describedby="password-error" />
-              <button type="button" class="eye-btn" @click="showPassword = !showPassword" :aria-pressed="showPassword" :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <button type="button" class="eye-btn" @click="togglePasswordVisibility" :aria-pressed="showPassword" :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
                 👁️
               </button>
             </div>
@@ -46,6 +45,7 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useRouter } from 'vue-router'
+import jwt_decode  from 'jwt-decode' // Correcto, usar importación por defecto
 
 const emit = defineEmits(['close', 'logged-in'])
 const router = useRouter()
@@ -82,15 +82,20 @@ function validate() {
   return ok
 }
 
+// Función para mostrar/ocultar la contraseña
+function togglePasswordVisibility() {
+  showPassword.value = !showPassword.value
+}
+
 async function handleLogin() {
   if (!validate()) return
   const payload = {
     username: email.value,
+    email: email.value,
     password: password.value
   }
 
   try {
-    // Usa la URL absoluta para evitar problemas de CORS/proxy en desarrollo
     const res = await fetch('http://localhost:8080/public/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,6 +107,8 @@ async function handleLogin() {
     }
     const data = await res.json()
     const token = data.token
+    const userType = data.userType // Esto lo deberías recibir del backend
+
     if (!token) throw new Error('No se recibió token')
 
     // Guarda el token en el store y en localStorage
@@ -109,13 +116,21 @@ async function handleLogin() {
     auth.setToken(token)
     localStorage.setItem('jwt', token)
 
+    const decoded = jwt_decode(token); // Utiliza una librería como 'jwt-decode' para decodificar el JWT
+    const userTypeFromToken = decoded.userType; // Extrae el tipo de usuario del token
+
     emit('logged-in', token)
-    // Redirigir a la vista de administrador
-    try {
+    // Redirigir a la vista según el tipo de usuario
+    if (userTypeFromToken === 'admin') {
+      // Redirigir a la vista del administrador
       router.push({ name: 'home-admin' })
-    } catch (e) {
-      router.push('/admin')
+    } else if (userTypeFromToken === 'driver') {
+      // Redirigir a la vista del conductor
+      router.push({ name: 'home-driver' }) // Cambia 'home-driver' por la ruta correspondiente
+    } else {
+      throw new Error('Tipo de usuario desconocido')
     }
+
     emit('close')
     // Limpia campos y errores
     email.value = ''
@@ -127,6 +142,7 @@ async function handleLogin() {
     passwordError.value = 'Credenciales inválidas o error del servidor.'
   }
 }
+
 
 function close() {
   emit('close')

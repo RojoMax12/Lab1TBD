@@ -26,17 +26,17 @@ public class DriverController {
     }
 
     @GetMapping("/{id}")
-    public DriverEntity getDriverById(@PathVariable int id) {
+    public DriverEntity getDriverById(@PathVariable Long id) {
         return driverServices.getDriverById(id);
     }
 
     @PutMapping("/{id}")
-    public void updateDriver(@PathVariable int id, @RequestBody DriverEntity driverEntity) {
+    public void updateDriver(@PathVariable Long id, @RequestBody DriverEntity driverEntity) {
         driverServices.updateDriver(id, driverEntity);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDriver(@PathVariable int id) {
+    public void deleteDriver(@PathVariable Long id) {
         driverServices.deleteDriver(id);
     }
 }

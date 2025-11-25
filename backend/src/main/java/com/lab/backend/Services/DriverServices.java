@@ -30,7 +30,7 @@ public class DriverServices {
         return driverRepository.getAllDrivers();
     }
 
-    public DriverEntity getDriverById(int id) {
+    public DriverEntity getDriverById(Long id) {
         return driverRepository.getDriverById(id);
     }
 
@@ -38,7 +38,7 @@ public class DriverServices {
         return driverRepository.getDriverByEmail(email);
     }
 
-    public void updateDriver(int id, DriverEntity driverEntity) {
+    public void updateDriver(Long id, DriverEntity driverEntity) {
         // If password is being updated, hash it
         if (driverEntity.getPassword() != null && !driverEntity.getPassword().isEmpty()) {
             String hashed = passwordEncoder.encode(driverEntity.getPassword());
@@ -47,7 +47,7 @@ public class DriverServices {
         driverRepository.updateDriver(id, driverEntity);
     }
 
-    public void deleteDriver(int id) {
+    public void deleteDriver(Long id) {
         driverRepository.deleteDriver(id);
     }
 

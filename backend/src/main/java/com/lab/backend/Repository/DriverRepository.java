@@ -55,7 +55,7 @@ public class DriverRepository {
         }
     }
 
-    public DriverEntity getDriverById(int id) {
+    public DriverEntity getDriverById(Long id) {
         String sql = "SELECT * FROM driver WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql)
@@ -79,22 +79,24 @@ public class DriverRepository {
         }
     }
 
-    public void updateDriver(int id, DriverEntity driverEntity) {
+    public void updateDriver(Long id, DriverEntity driverEntity) {
         String sql = "UPDATE driver SET name = :name, last_name = :last_name, email = :email, password = :password WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             connection.createQuery(sql)
-                .addParameter("name", driverEntity.getName())
-                .addParameter("last_name", driverEntity.getLast_name())
-                .addParameter("email", driverEntity.getEmail())
-                .addParameter("password", driverEntity.getPassword())
-                .executeUpdate();
+                    .addParameter("name", driverEntity.getName())
+                    .addParameter("last_name", driverEntity.getLast_name())
+                    .addParameter("email", driverEntity.getEmail())
+                    .addParameter("password", driverEntity.getPassword())
+                    .addParameter("id", id)  // Aquí añades el parámetro 'id'
+                    .executeUpdate();
         } catch (Sql2oException e) {
             System.err.println("Error al actualizar el driver");
-            throw new RuntimeException("No se pudo actualizar el driver");
+            throw new RuntimeException("No se pudo actualizar el driver", e);
         }
     }
 
-    public void deleteDriver(int id) {
+
+    public void deleteDriver(Long id) {
         String sql = "DELETE FROM driver WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             connection.createQuery(sql)

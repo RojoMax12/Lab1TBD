@@ -4,12 +4,11 @@
   </div>
 
   <div class="container-worker">
-
     <h1 class="title">Gestión de Conductores</h1>
 
     <!-- Botón agregar -->
     <div class="actions-top">
-      <button class="btn-add" @click="mostrarModal = true">
+      <button class="btn-add" @click="abrirModalNuevo">
         Agregar conductor
       </button>
     </div>
@@ -17,16 +16,18 @@
     <!-- MODAL EMERGENTE -->
     <div v-if="mostrarModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal">
-        <h2>Nuevo conductor</h2>
+        <h2>{{ editando ? 'Editar Conductor' : 'Nuevo Conductor' }}</h2>
 
-        <!-- Campos según UserEntity -->
-        <input v-model="nuevoUsuario.name" placeholder="Nombre" />
-        <input v-model="nuevoUsuario.last_name" placeholder="Apellido" />
-        <input v-model="nuevoUsuario.email" placeholder="Email" type="email" />
-        <input v-model="nuevoUsuario.password" placeholder="Contraseña" type="password" />
+        <!-- Campos según DriverEntity -->
+        <input v-model="nuevoConductor.name" placeholder="Nombre" />
+        <input v-model="nuevoConductor.last_name" placeholder="Apellido" />
+        <input v-model="nuevoConductor.email" placeholder="Email" type="email" />
+        <input v-model="nuevoConductor.password" placeholder="Contraseña" type="password" />
 
         <div class="modal-buttons">
-          <button class="btn-save" @click="guardarUsuario">Guardar</button>
+          <button class="btn-save" @click="editando ? actualizarConductor() : guardarConductor()">
+            {{ editando ? 'Actualizar' : 'Guardar' }}
+          </button>
           <button class="btn-cancel" @click="cerrarModal">Cancelar</button>
         </div>
       </div>
@@ -41,117 +42,147 @@
       <div>Acciones</div>
     </div>
 
-    <div
-      class="grid-row"
-      v-for="(u, index) in usuarios"
-      :key="index"
-    >
-      <div>{{ u.id }}</div>
-      <div>{{ u.name }}</div>
-      <div>{{ u.last_name }}</div>
-      <div>{{ u.email }}</div>
+  <div class = "scrollable-table">
+    <div class="grid-row" v-for="driver in drivers" :key="driver.id">
+      <div>{{ driver.id }}</div>
+      <div>{{ driver.name }}</div>
+      <div>{{ driver.last_name }}</div>
+      <div>{{ driver.email }}</div>
 
       <div class="row-actions">
-        <button class="btn-edit">Editar</button>
-        <button class="btn-delete">Eliminar</button>
+        <button class="btn-edit" @click="abrirModalEditar(driver)">Editar</button>
+        <button class="btn-delete" @click="eliminarConductor(driver.id)">Eliminar</button>
       </div>
     </div>
-
   </div>
+</div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script>
+import { onMounted, ref } from 'vue'
 import HomeAdminView from '@/components/Admin/HeaderAdmin.vue'
-import { apiFetch } from '@/lib/api.js'
+import DriverServices from '@/services/driverservices'
 
-const mostrarModal = ref(false)
-
-/* =============================
-   DATOS DE PRUEBA (serán reemplazados por los creados en backend)
-============================= */
-const usuarios = ref([
-  {
-    id: 1,
-    name: "Carlos",
-    last_name: "González",
-    email: "carlos@example.com"
+export default {
+  name: 'UsersView',
+  components: {
+    HomeAdminView
   },
-  {
-    id: 2,
-    name: "María",
-    last_name: "López",
-    email: "maria@example.com"
-  },
-  {
-    id: 3,
-    name: "Ana",
-    last_name: "Martínez",
-    email: "ana@example.com"
-  }
-])
+  setup() {
+    const mostrarModal = ref(false)
+    const editando = ref(false)
+    const drivers = ref([])
+    const nuevoConductor = ref({
+      name: '',
+      last_name: '',
+      email: '',
+      password: ''
+    })
+    const saving = ref(false)
+    const errorMsg = ref('')
 
-/* NUEVO USUARIO */
-const nuevoUsuario = ref({
-  name: '',
-  last_name: '',
-  email: '',
-  password: ''
-})
-
-const saving = ref(false)
-const errorMsg = ref('')
-
-function cerrarModal() {
-  mostrarModal.value = false
-  errorMsg.value = ''
-}
-
-async function guardarUsuario() {
-  errorMsg.value = ''
-  // Validación mínima
-  if (!nuevoUsuario.value.email || !nuevoUsuario.value.password || !nuevoUsuario.value.name) {
-    errorMsg.value = 'Nombre, email y contraseña son obligatorios.'
-    return
-  }
-
-  saving.value = true
-  try {
-    // Llamada al backend para crear driver y recibir token/id
-    const payload = {
-      name: nuevoUsuario.value.name,
-      last_name: nuevoUsuario.value.last_name,
-      email: nuevoUsuario.value.email,
-      password: nuevoUsuario.value.password
+    // Cerrar modal
+    const cerrarModal = () => {
+      mostrarModal.value = false
+      errorMsg.value = ''
     }
 
-    const res = await apiFetch('/api/drivers/', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    })
+    // Obtener los conductores desde el backend
+    const obtenerConductores = () => {
+      DriverServices.getAllDrivers()
+        .then(response => {
+          drivers.value = response.data
+        })
+        .catch(error => {
+          console.error('Error al obtener conductores:', error)
+        })
+    }
 
-    // res expected { id, token }
-    usuarios.value.push({
-      id: res.id || usuarios.value.length + 1,
-      name: nuevoUsuario.value.name,
-      last_name: nuevoUsuario.value.last_name,
-      email: nuevoUsuario.value.email
-    })
+    onMounted(obtenerConductores)
 
-    // reset
-    nuevoUsuario.value = { name: '', last_name: '', email: '', password: '' }
-    mostrarModal.value = false
-  } catch (err) {
-    console.error('Error al crear usuario:', err)
-    errorMsg.value = err.message || 'Error al crear usuario en el servidor.'
-  } finally {
-    saving.value = false
+    // Abrir modal para agregar un nuevo conductor
+    const abrirModalNuevo = () => {
+      mostrarModal.value = true
+      editando.value = false
+      nuevoConductor.value = {  // Resetea los valores del conductor
+        name: '',
+        last_name: '',
+        email: '',
+        password: ''
+      }
+    }
+
+    // Abrir modal para editar un conductor
+    const abrirModalEditar = (driver) => {
+      mostrarModal.value = true
+      editando.value = true  // Establece que estamos editando
+      nuevoConductor.value = { ...driver }  // Carga los datos del conductor seleccionado
+    }
+
+    // Guardar un nuevo conductor
+    const guardarConductor = () => {
+      DriverServices.createDriver(nuevoConductor.value)
+        .then(() => {
+          obtenerConductores()
+          cerrarModal()
+        })
+        .catch((error) => {
+          console.error('Error al guardar conductor:', error)
+          errorMsg.value = 'Error al guardar conductor. Inténtalo de nuevo.'
+        })
+        .finally(() => {
+          saving.value = false
+        })
+    }
+
+    // Actualizar un conductor existente
+    const actualizarConductor = () => {
+      saving.value = true
+      DriverServices.updateDriver(nuevoConductor.value.id, nuevoConductor.value)
+        .then(() => {
+          obtenerConductores()
+          cerrarModal()
+        })
+        .catch((error) => {
+          console.error('Error al actualizar conductor:', error)
+          errorMsg.value = 'Error al actualizar conductor. Inténtalo de nuevo.'
+        })
+        .finally(() => {
+          saving.value = false
+        })
+    }
+
+    // Eliminar conductor
+    const eliminarConductor = (id) => {
+      DriverServices.deleteDriver(id)
+        .then(() => {
+          obtenerConductores()
+        })
+        .catch((error) => {
+          console.error('Error al eliminar conductor:', error)
+        })
+    }
+
+    return {
+      mostrarModal,
+      editando,
+      saving,
+      errorMsg,
+      drivers,
+      nuevoConductor,
+      cerrarModal,
+      abrirModalNuevo,
+      guardarConductor,
+      actualizarConductor,
+      eliminarConductor,
+      abrirModalEditar
+    }
   }
 }
 </script>
 
 <style scoped>
-/* ==========================
+/* ========================== 
    CONTENEDOR PRINCIPAL
 ========================== */
 .container-worker {
@@ -160,7 +191,7 @@ async function guardarUsuario() {
   border-radius: 12px;
   max-width: 900px;
   margin: 40px auto;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .title {
@@ -171,7 +202,7 @@ async function guardarUsuario() {
   color: #4a4f37;
 }
 
-/* ==========================
+/* ========================== 
    BOTÓN AGREGAR
 ========================== */
 .actions-top {
@@ -193,7 +224,7 @@ async function guardarUsuario() {
   background: #393d2b;
 }
 
-/* ==========================
+/* ========================== 
    TABLA
 ========================== */
 .grid-header {
@@ -241,7 +272,7 @@ async function guardarUsuario() {
   cursor: pointer;
 }
 
-/* ==========================
+/* ========================== 
    MODAL EMERGENTE
 ========================== */
 .modal-overlay {
@@ -306,5 +337,10 @@ async function guardarUsuario() {
   padding: 8px 16px;
   border-radius: 6px;
   border: none;
+}
+
+.scrollable-table {
+  max-height: 300px; /* Ajusta la altura máxima según lo que necesites */
+  overflow-y: auto;  /* Muestra el scroll cuando la tabla sea más alta que el contenedor */
 }
 </style>

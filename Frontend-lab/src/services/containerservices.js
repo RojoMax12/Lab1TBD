@@ -22,7 +22,7 @@ export default {
         return api.get(`/api/containers/${containerId}`);
     },
 
-    ProblematicContainer() {
+    ContainerWithProblems() {
         return api.get('/api/containers/problematic');
     },
 
@@ -30,7 +30,7 @@ export default {
         return api.get('/api/containers/density-analysis');
     },
 
-    DontRecolectedContainer() {
+    ContainersWithoutCollection() {
         return api.get('/api/containers/NoRecolectados');
     }
 

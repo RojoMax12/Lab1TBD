@@ -16,9 +16,10 @@ public class JwtUtil {
     private static final String SECRET = "mi_clave_super_secreta_para_jwt_1234567890";
     private final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String usertype) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("usertype", usertype)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
                 .signWith(SECRET_KEY)
@@ -41,4 +42,14 @@ public class JwtUtil {
                 .getExpiration()
                 .before(new Date());
     }
+
+    public String extractUserType(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody()
+                .get("userType", String.class);  // Extrae el tipo de usuario
+    }
+
+
 }
