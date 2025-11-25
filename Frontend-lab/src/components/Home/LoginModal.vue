@@ -45,7 +45,7 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useRouter } from 'vue-router'
-import jwt_decode  from 'jwt-decode' // Correcto, usar importación por defecto
+import * as jwt_decode from 'jwt-decode' 
 
 const emit = defineEmits(['close', 'logged-in'])
 const router = useRouter()
@@ -116,8 +116,10 @@ async function handleLogin() {
     auth.setToken(token)
     localStorage.setItem('jwt', token)
 
-    const decoded = jwt_decode(token); // Utiliza una librería como 'jwt-decode' para decodificar el JWT
-    const userTypeFromToken = decoded.userType; // Extrae el tipo de usuario del token
+  // jwt-decode may be exported as a CommonJS function or an ESM default. Support both shapes:
+  const decoder = (jwt_decode && (jwt_decode.default || jwt_decode));
+  const decoded = decoder ? decoder(token) : null; // Utiliza 'jwt-decode' para decodificar el JWT si está disponible
+  const userTypeFromToken = decoded ? decoded.userType : null; // Extrae el tipo de usuario del token
 
     emit('logged-in', token)
     // Redirigir a la vista según el tipo de usuario
