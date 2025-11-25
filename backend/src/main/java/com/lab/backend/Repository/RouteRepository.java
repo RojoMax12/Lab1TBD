@@ -1,4 +1,5 @@
 package com.lab.backend.Repository;
+import com.lab.backend.Entities.RouteEntity;
 import org.springframework.stereotype.Repository;
 
 import org.sql2o.Connection;
@@ -14,6 +15,63 @@ public class RouteRepository {
 
         this.sql2o = sql2o;
     }
+
+    //CRUD
+
+    public RouteEntity CreateRoute(RouteEntity routeEntity) {
+        String sql = "INSERT INTO route (id_driver, date_, start_time, end_time, route_status, id_central, id_pick_up_point) " +
+                "VALUES (:id_driver, :date_, :start_time, :end_time, :route_status, :id_central, :id_pick_up_point)";
+        try (Connection conn = sql2o.open()) {
+            Long id = conn.createQuery(sql, true)
+                    .bind(routeEntity)
+                    .executeUpdate()
+                    .getKey(Long.class);
+            routeEntity.setId(id);
+            return routeEntity;
+        } catch (Exception e) {
+            System.err.println("Error al crear la ruta: " + e.getMessage());
+            throw new RuntimeException("No se pudo crear la ruta", e);
+        }
+    }
+
+    public List<RouteEntity> getAllRoutes() {
+        String sql = "SELECT * FROM route";
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .executeAndFetch(RouteEntity.class);
+        } catch (Exception e) {
+            System.err.println("Error al obtener las rutas: " + e.getMessage());
+            throw new RuntimeException("No se pudieron obtener las rutas", e);
+        }
+    }
+
+    public void updateRoute(Long id, RouteEntity routeEntity) {
+        String sql = "UPDATE route SET id_driver = :id_driver, date_ = :date_, start_time = :start_time, " +
+                "end_time = :end_time, route_status = :route_status, id_central = :id_central, " +
+                "id_pick_up_point = :id_pick_up_point WHERE id = :id";
+        try (Connection conn = sql2o.open()) {
+            conn.createQuery(sql)
+                    .bind(routeEntity)
+                    .addParameter("id", id)
+                    .executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Error al actualizar la ruta: " + e.getMessage());
+            throw new RuntimeException("No se pudo actualizar la ruta", e);
+        }
+    }
+
+    public void deleteRoute(Long id) {
+        String sql = "DELETE FROM route WHERE id = :id";
+        try (Connection conn = sql2o.open()) {
+            conn.createQuery(sql)
+                    .addParameter("id", id)
+                    .executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Error al eliminar la ruta: " + e.getMessage());
+            throw new RuntimeException("No se pudo eliminar la ruta", e);
+        }
+    }
+
 
     public void planificarRuta(String contenedoresJson, Long idDriver, Long idCentral, Long idPickUpPoint) {
         String sql = "CALL planificar_ruta(:contenedores::json, :idDriver, :idCentral, :idPickUpPoint)";

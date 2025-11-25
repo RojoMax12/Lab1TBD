@@ -1,8 +1,10 @@
 package com.lab.backend.Services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lab.backend.Entities.RouteEntity;
 import com.lab.backend.Repository.RouteRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.RouteMatcher;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,22 @@ public class RouteServices {
 
     public RouteServices(RouteRepository routeRepository) {
         this.routeRepository = routeRepository;
+    }
+
+    public RouteEntity createRoute(RouteEntity routeEntity) {
+        return routeRepository.CreateRoute(routeEntity);
+    }
+
+    public List<RouteEntity> findAllRoutes() {
+        return routeRepository.getAllRoutes();
+    }
+
+    public void updateRoute(Long id, RouteEntity routeEntity) {
+        routeRepository.updateRoute(id, routeEntity);
+    }
+
+    public void deleteRoute(Long id) {
+        routeRepository.deleteRoute(id);
     }
 
     public void planificarRuta(List<Long> contenedorIds, Long idDriver, Long idCentral, Long idPickUpPoint) {
