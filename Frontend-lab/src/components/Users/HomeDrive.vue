@@ -65,16 +65,20 @@ function routeTaken() {
 
 <style scoped>
 .header {
-  width: 100%;
-  background: linear-gradient(180deg, #5e6541, #4d5d39);
-  color: #fff;
+  --bg-start: #6a704a;
+  --bg-end: #4e5336;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.1rem 2rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-  border-bottom: 2px solid rgba(255,255,255,0.04);
-  position: relative;
+  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  color: white;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(4px);
 }
 
 .profile-container {

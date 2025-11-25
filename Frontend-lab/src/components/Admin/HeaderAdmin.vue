@@ -149,14 +149,20 @@ function rutas() {
 
 /* Header */
 .admin-header {
+  --bg-start: #6a704a;
+  --bg-end: #4e5336;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #5f6949;
-  padding: 1rem 1.5rem;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  color: white;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(4px);
 }
 
 .admin-left {

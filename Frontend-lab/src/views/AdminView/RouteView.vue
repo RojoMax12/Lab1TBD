@@ -215,7 +215,7 @@ function guardarRuta() {
   background: #f9f9f9;
   padding: 25px;
   border-radius: 12px;
-  max-width: 1000px;
+  width: 1000px;
   margin: 40px auto;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }

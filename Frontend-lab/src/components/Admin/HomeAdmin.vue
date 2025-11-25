@@ -122,9 +122,7 @@ function fetchWastePerformance() {
   margin-bottom: 20px;
   padding-bottom: 40px;
   width: 1000px;
-  position: relative;
-  right: -200px;
-
+  justify-content: center;
 }
 
 /* Button style */
@@ -140,6 +138,7 @@ function fetchWastePerformance() {
   position: relative;
   right: -760px;
   top: -20px;
+  margin-bottom: auto;
   
 }
 
@@ -202,5 +201,23 @@ function fetchWastePerformance() {
     width: 100%;
     max-width: 100%;
   }
+}
+
+.admin-main{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.waste-performance {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  padding-bottom: 40px;
+  width: 1000px;
+  justify-content: center;
+  margin-top: 20px;
 }
 </style>
