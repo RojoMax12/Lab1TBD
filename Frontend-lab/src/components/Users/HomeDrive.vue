@@ -4,9 +4,9 @@
       <button class="menu-btn" @click="showSidebar = true" aria-label="Abrir menú">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
           <circle cx="14" cy="14" r="14" fill="#f7f7f7"/>
-          <circle cx="9" cy="14" r="2" fill="#4d5d39"/>
-          <circle cx="14" cy="14" r="2" fill="#4d5d39"/>
-          <circle cx="19" cy="14" r="2" fill="#4d5d39"/>
+          <rect x="7" y="12" width="14" height="2" rx="1" fill="#5f6949"/>
+          <rect x="7" y="16" width="14" height="2" rx="1" fill="#5f6949"/>
+          <rect x="7" y="8" width="14" height="2" rx="1" fill="#5f6949"/>
         </svg>
       </button>
       <img src="/logo.png" alt="Logo empresa" class="logo" />
@@ -153,7 +153,7 @@ function routeAssigned() {
 .profile-info {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
 }
 
 .name-employeer {
@@ -192,25 +192,24 @@ function routeAssigned() {
 }
 
 .logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(180deg,#fff,#f7f7f7);
-  color: #4d5d39;
-  border: none;
-  padding: 0.55rem 1.1rem;
+  background: linear-gradient(180deg,#ffffff,#f3f3f3);
+  color: #5e6541;
+  padding: 0.5rem 1rem;
   border-radius: 999px;
+  border: none;
   cursor: pointer;
   font-weight: 600;
-  box-shadow: 0 4px 14px rgba(94,101,65,0.10);
-  transition: background 0.18s, box-shadow 0.18s;
-  outline: none;
+  box-shadow: 0 2px 6px rgba(94,101,65,0.14);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.logout-btn:hover {
+    transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(94,101,65,0.18);
 }
 
-.logout-btn:hover,
 .logout-btn:focus {
-  background: #eaeaea;
-  box-shadow: 0 6px 18px rgba(94,101,65,0.14);
+  outline: 3px solid rgba(255,255,255,0.12);
+  outline-offset: 2px;
 }
 
 .logout-text {
@@ -288,19 +287,5 @@ function routeAssigned() {
   width: 100vw; height: 100vh;
   background: rgba(0,0,0,0.18);
   z-index: 1000;
-}
-
-@media (max-width: 600px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem 1rem;
-    gap: 0.8rem;
-  }
-  .profile-container { gap: 0.7rem; }
-  .logo { width: 44px; height: 44px; }
-  .name-employeer { font-size: 1.05rem; }
-  .logout-btn { padding: 0.45rem 0.8rem; font-size: 0.95rem; }
-  .sidebar { width: 90vw; min-width: 220px; }
 }
 </style>

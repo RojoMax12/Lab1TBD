@@ -2,6 +2,7 @@ package com.lab.backend.Entities;
 
 import java.time.LocalTime;
 import java.util.Date;
+import java.sql.Time;
 
 public class RouteEntity {
     private Long id;
@@ -41,8 +42,26 @@ public class RouteEntity {
         return start_time;
     }
 
+    // Setter compatible with different DB/JDBC driver return types.
+    // sql2o may pass a String, java.sql.Time, or java.time.LocalTime.
     public void setStart_time(String start_time) {
-        this.start_time = LocalTime.parse(start_time);
+        if (start_time == null || start_time.trim().isEmpty()) {
+            this.start_time = null;
+        } else {
+            this.start_time = LocalTime.parse(start_time);
+        }
+    }
+
+    public void setStart_time(Time start_time) {
+        if (start_time == null) {
+            this.start_time = null;
+        } else {
+            this.start_time = start_time.toLocalTime();
+        }
+    }
+
+    public void setStart_time(LocalTime start_time) {
+        this.start_time = start_time;
     }
 
     public LocalTime getEnd_time() {
@@ -50,7 +69,23 @@ public class RouteEntity {
     }
 
     public void setEnd_time(String end_time) {
-        this.end_time = LocalTime.parse(end_time);
+        if (end_time == null || end_time.trim().isEmpty()) {
+            this.end_time = null;
+        } else {
+            this.end_time = LocalTime.parse(end_time);
+        }
+    }
+
+    public void setEnd_time(Time end_time) {
+        if (end_time == null) {
+            this.end_time = null;
+        } else {
+            this.end_time = end_time.toLocalTime();
+        }
+    }
+
+    public void setEnd_time(LocalTime end_time) {
+        this.end_time = end_time;
     }
 
     public String getRoute_status() {

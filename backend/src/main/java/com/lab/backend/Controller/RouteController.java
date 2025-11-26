@@ -54,9 +54,9 @@ public class RouteController {
                     request.idCentral,
                     request.idPickUpPoint
             );
-            return "✅ Ruta planificada exitosamente";
+            return "Ruta planificada exitosamente";
         } catch (Exception e) {
-            return "❌ Error: " + e.getMessage();
+            return "Error: " + e.getMessage();
         }
     }
 

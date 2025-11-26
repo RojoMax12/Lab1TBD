@@ -16,16 +16,56 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: HomeView },
-    { path: '/driver', name: 'home-driver', component: HomeDriverView },
-    { path: '/admin', name: 'home-admin', component: HomeAdminView },
+    { path: '/driver', name: 'home-driver', component: HomeDriverView, meta: { requiresAuth: true } },
+    { path: '/admin', name: 'home-admin', component: HomeAdminView, meta: { requiresAuth: true } },
     { path: '/route-taken', name: 'route-taken', component: RouteTakenView },
-    { path: '/users', name: 'users', component: UsersView },
-    { path: '/container', name: 'containers', component: ContainersView },
-    { path: '/route', name: 'route', component: RouteView },
-    { path: '/admins', name: 'admins', component: AdminsView },
+    { path: '/users', name: 'users', component: UsersView, meta: { requiresAuth: true } },
+    { path: '/container', name: 'containers', component: ContainersView, meta: { requiresAuth: true } },
+    { path: '/route', name: 'route', component: RouteView, meta: { requiresAuth: true } },
+    { path: '/admins', name: 'admins', component: AdminsView, meta: { requiresAuth: true } },
     { path: '/route-assigned', name: 'route-assigned', component: RouteAssignedView },
-    { path: '/centrals', name: 'centrals', component: CentralView }
+    { path: '/centrals', name: 'centrals', component: CentralView, meta: { requiresAuth: true } }
   ]
+})
+
+// navegacion global bloquea rutas que requieren auth cuando no hay JWT presente
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta && record.meta.requiresAuth)
+  const token = (() => {
+    try { return localStorage.getItem('jwt') } catch (e) { return null }
+  })()
+  // Helper to safely decode JWT payload (no external deps)
+  function parseJwtPayload(t: string | null) {
+    if (!t) return null
+    try {
+      const part = t.split('.')[1]
+      if (!part) return null
+      const decoded = decodeURIComponent(atob(part).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      }).join(''))
+      return JSON.parse(decoded)
+    } catch (e) {
+      return null
+    }
+  }
+
+  // If route requires auth but there's no token, block access and send to public home
+  if (requiresAuth && !token) {
+    return next({ name: 'home' })
+  }
+
+  // If user is logged in (has token) and tries to navigate to public home, redirect
+  if (to.name === 'home' && token) {
+    const payload = parseJwtPayload(token)
+    const userType = payload?.userType || payload?.role || payload?.rol || payload?.type
+    if (userType && String(userType).toLowerCase().includes('driver')) {
+      return next({ name: 'home-driver' })
+    }
+    // default to admin dashboard when role is not driver
+    return next({ name: 'home-admin' })
+  }
+
+  return next()
 })
 
 export default router

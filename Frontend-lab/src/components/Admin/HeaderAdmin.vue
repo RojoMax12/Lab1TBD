@@ -172,9 +172,13 @@ function centrals() {
   padding: 0.75rem 1.25rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  position: sticky;
+  /* Make admin header fixed so it stays visible while scrolling */
+  position: static;
   top: 0;
-  z-index: 100;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1100;
   backdrop-filter: blur(4px);
 }
 
@@ -214,13 +218,14 @@ function centrals() {
 .logout-btn {
   background: linear-gradient(180deg,#ffffff,#f3f3f3);
   color: #5e6541;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.5rem;
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 800;
   box-shadow: 0 2px 6px rgba(94,101,65,0.14);
   transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  font-size: 15px;
 }
 .logout-btn:hover {
     transform: translateY(-2px);
@@ -305,7 +310,8 @@ function centrals() {
 
 /* Main */
 .admin-main {
-  padding: 2rem;
+  /* add top padding to avoid content being hidden behind the fixed header */
+  padding: calc(2rem + 64px) 2rem 2rem 2rem;
 }
 
 .admin-title {

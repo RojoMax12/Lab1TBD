@@ -106,6 +106,7 @@
             <th>Central</th>
             <th>Punto Retiro</th>
             <th>Contenedores</th>
+            <th>Acciones</th>
           </tr>
         </thead>
 
@@ -120,6 +121,9 @@
             <td>{{ r.id_central }}</td>
             <td>{{ r.id_pick_up_point }}</td>
             <td>{{ r.contenedores.join(', ') }}</td>
+            <td>
+              <button class="btn-delete" @click="eliminarRuta(r.id)">Eliminar</button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -132,11 +136,18 @@
 import { ref } from 'vue'
 import { onMounted } from 'vue'
 import HomeAdminView from '@/components/Admin/HeaderAdmin.vue'
+// Use direct fetch calls instead of a routeServices wrapper to keep this component self-contained
+import driverServices from '@/services/driverservices'
+import centralServices from '@/services/centralservices'
+import containerServices from '@/services/containerservices'
 import routeServices from '@/services/routeservices'
-
+import pickUpServices from '@/services/pickupservices'
 /* MODAL */
 const mostrarModal = ref(false)
 const contenedores = ref([])
+const drivers = ref([])
+const centrales = ref([])
+const puntosRetiro = ref([])
 /* RUTAS PLANIFICADAS */
 const rutas = ref([])
 
@@ -152,6 +163,24 @@ const nuevaRuta = ref({
 
 const contenedoresSeleccionados = ref([])
 
+async function eliminarRuta(id) {
+  if (!id) {
+    alert('ID de ruta inválido')
+    return
+  }
+  if (!confirm('¿Confirma que desea eliminar la planificación de ruta #' + id + '?')) {
+    return
+  }
+  try {
+    await routeServices.deleteRoute(id)
+    alert('Ruta eliminada correctamente')
+    fetchRutas()
+  } catch (e) {
+    console.error('Error deleting route:', e)
+    alert('Error al eliminar la ruta: ' + (e.message || e))
+  }
+}
+
 function cerrarModal() {
   mostrarModal.value = false
 }
@@ -161,15 +190,26 @@ function guardarRuta() {
     alert("Debes completar el formulario y seleccionar contenedores.")
     return
   }
+  // Build payload for backend
+  const payload = {
+    contenedores: contenedoresSeleccionados.value,
+    idDriver: Number(nuevaRuta.value.id_driver),
+    idCentral: Number(nuevaRuta.value.id_central),
+    idPickUpPoint: Number(nuevaRuta.value.id_pick_up_point)
+  }
 
-  rutas.value.push({
-    id: rutas.value.length + 1,
-    ...nuevaRuta.value,
-    route_status: "Pendiente",
-    contenedores: [...contenedoresSeleccionados.value]
-  })
+  routeServices.createroute(payload)
+    .then(res => {
+      // on success, refresh routes list or push temporary
+      fetchRutas()
+      alert('Ruta planificada exitosamente')
+    })
+    .catch(err => {
+      console.error('Error creating route:', err)
+      alert('Error al planificar ruta: ' + (err.message || err))
+    })
 
-  // RESET
+  // RESET local form
   nuevaRuta.value = {
     id_driver: "",
     date: "",
@@ -183,23 +223,64 @@ function guardarRuta() {
   mostrarModal.value = false
 }
 
-function fetchrutas () {
-  routeServices.getAllRoutes()
-    .then(response => {
-      rutas.value = response.data.map(ruta => ({
-        ...ruta,
-        contenedores: ruta.contenedores || []
-      }))
-      contenedores.value = response.data.contenedores || []
-      console.log(response.data)
-    })
-    .catch(error => {
-      console.error("Error fetching routes:", error)
-    })
+async function fetchRutas() {
+  try {
+    const res = await routeServices.getAllRoutes()
+    const data = res
+    // routeServices returns parsed JSON via api adapter; ensure array
+    const list = Array.isArray(data) ? data : (data.data || [])
+    rutas.value = list.map(ruta => ({ ...ruta, contenedores: ruta.contenedores || [] }))
+  } catch (e) {
+    console.error('Error fetching routes:', e)
+  }
+}
+
+async function fetchDrivers() {
+  try {
+    const res = await driverServices.getAllDrivers()
+    drivers.value = Array.isArray(res) ? res : (res.data || [])
+  } catch (e) {
+    console.warn('Could not load drivers:', e)
+    drivers.value = []
+  }
+}
+
+async function fetchContenedores() {
+  try {
+    const res = await containerServices.getAllContainers()
+    contenedores.value = Array.isArray(res) ? res : (res.data || [])
+  } catch (e) {
+    console.warn('Could not load contenedores:', e)
+    contenedores.value = []
+  }
+}
+
+async function fetchCentrales() {
+  try {
+    const res = await centralServices.getAllCentrals()
+    centrales.value = Array.isArray(res) ? res : (res.data || [])
+  } catch (e) {
+    console.warn('Could not load centrales:', e)
+    centrales.value = []
+  }
+}
+
+async function fetchPuntosRetiro() {
+  try {
+    const res = await pickUpServices.getAllPickUp()
+    puntosRetiro.value = Array.isArray(res) ? res : (res.data || [])
+  } catch (e) {
+    console.warn('Could not load pick up points via service:', e)
+    puntosRetiro.value = []
+  }
 }
 
 onMounted(() => {
-  fetchrutas()
+  fetchRutas()
+  fetchDrivers()
+  fetchContenedores()
+  fetchCentrales()
+  fetchPuntosRetiro()
 })
 
 
@@ -235,9 +316,10 @@ onMounted(() => {
 .btn-plan {
   background: #4a4f37;
   color: #fff;
-  padding: 10px 18px;
+  padding: 10px 40px;
   border-radius: 8px;
   border: none;
+  font-size: 15px;
 }
 
 .modal-overlay {
@@ -255,7 +337,10 @@ onMounted(() => {
   padding: 20px ;
   border-radius: 10px;
   width: 420px;
-  color: #ffffff;
+  color: #333;
+  /* make modal vertically scrollable when content is tall */
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .label {
@@ -276,7 +361,7 @@ onMounted(() => {
   border-radius: 8px;
   border: 1px solid #ddd;
   padding: 8px;
-  max-height: 200px;
+  max-height: 240px; /* allow more room but still scroll */
   overflow-y: auto;
   margin-top: 10px;
 }
@@ -334,5 +419,18 @@ onMounted(() => {
 .Data-text {
   color: #4a4f37;
   text-align: center;
+}
+
+.btn-delete {
+  background: #d9534f;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  opacity: 0.9;
 }
 </style>

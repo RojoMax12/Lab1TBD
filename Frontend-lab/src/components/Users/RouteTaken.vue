@@ -136,4 +136,8 @@
     font-size: 0.95rem;
   }
 }
+
+.container {
+  overflow-x: auto;
+}
 </style>

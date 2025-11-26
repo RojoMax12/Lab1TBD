@@ -122,13 +122,14 @@ function onLogout() {
 .login-btn {
   background: linear-gradient(180deg,#ffffff,#f3f3f3);
   color: #5e6541;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.5rem;
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 800;
   box-shadow: 0 2px 6px rgba(94,101,65,0.14);
   transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  font-size: 15px;
 }
 
 .login-btn:hover {
