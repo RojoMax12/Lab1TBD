@@ -26,4 +26,8 @@ export default {
     deleteDriver(driverId) {
         return api.delete(`/api/drivers/${driverId}`);
     },
+
+    getDriverByEmail(email) {
+        return api.get(`/api/drivers/email/${email}`);
+    }
 };

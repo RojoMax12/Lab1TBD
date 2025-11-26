@@ -35,6 +35,7 @@
       <a class="sidebar-link" @click="container()">Contenedores</a>
       <a class="sidebar-link" @click="users()">Conductores</a>
       <a class="sidebar-link" @click="admins()">Admins</a>
+      <a class="sidebar-link" @click="centrals()">Centrales</a>
       <a class="sidebar-link" @click="rutas()">Rutas</a>
     </nav>
   </aside>
@@ -144,6 +145,12 @@ function admins() {
   showSidebar.value = false
   router.push({ name: 'admins' })
 }
+
+function centrals() {
+  showSidebar.value = false
+  router.push({ name: 'centrals' })
+}
+
 </script>
 
 <style scoped>
@@ -205,17 +212,24 @@ function admins() {
 }
 
 .logout-btn {
-  background-color: #f4e9da;
-  color: black;
-  font-weight: 500;
-  padding: 0.5rem 1.25rem;
-  border-radius: 25px;
+  background: linear-gradient(180deg,#ffffff,#f3f3f3);
+  color: #5e6541;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
   border: none;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(94,101,65,0.14);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
 }
 .logout-btn:hover {
-  background-color: #e1d5c5;
+    transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(94,101,65,0.18);
+}
+
+.logout-btn:focus {
+  outline: 3px solid rgba(255,255,255,0.12);
+  outline-offset: 2px;
 }
 
 /* Barra lateral */

@@ -24,8 +24,8 @@ public class CentralServices {
         return centralRepository.createCentral(central);
     }
 
-    public CentralEntity updateCentral(CentralEntity central) {
-        return centralRepository.createCentral(central);
+    public void updateCentral(Long id ,CentralEntity central) {
+        centralRepository.updateCentral(id, central);
     }
 
     public void deleteCentral(Long id) {

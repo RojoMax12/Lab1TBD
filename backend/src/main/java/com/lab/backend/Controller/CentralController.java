@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/Central")
+@RequestMapping("/api/central")
 public class CentralController {
 
     private CentralServices centralServices;
@@ -38,8 +38,8 @@ public class CentralController {
         centralServices.deleteCentral(id);
     }
 
-    @PutMapping("/UpdateCentral")
-    public CentralEntity updateCentral(@RequestBody CentralEntity central){
-        return centralServices.updateCentral(central);
+    @PutMapping("/UpdateCentral/{id}")
+    public void updateCentral(@PathVariable Long id, @RequestBody CentralEntity central){
+        centralServices.updateCentral(id,central);
     }
 }

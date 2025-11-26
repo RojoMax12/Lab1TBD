@@ -18,7 +18,7 @@ public class CentralRepository {
 
 
     public CentralEntity createCentral(CentralEntity central) {
-        String sql = "Insert into centralentity (name, coord_x, coord_y) values (:name, :coord_x, :coord_y)";
+        String sql = "Insert into central (name, coord_x, coord_y) values (:name, :coord_x, :coord_y)";
         Connection connection = null;
         try {
             connection = sql2o.open();
@@ -41,7 +41,7 @@ public class CentralRepository {
     }
 
     public List<CentralEntity> getAllCentrals() {
-        String sql = "SELECT * FROM centralentity";
+        String sql = "SELECT * FROM central";
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql)
                     .executeAndFetch(CentralEntity.class);
@@ -50,7 +50,7 @@ public class CentralRepository {
     }
 
     public CentralEntity getCentralById(Long id) {
-        String sql = "SELECT * FROM centralentity WHERE id = :id";
+        String sql = "SELECT * FROM central  WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql)
                     .addParameter("id", id)
@@ -62,29 +62,28 @@ public class CentralRepository {
         }
     }
 
-    public boolean deleteCentral(Long id) {
-        String sql = "DELETE FROM centralentity WHERE id = :id";
+    public void deleteCentral(Long id) {
+        String sql = "DELETE FROM central WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             connection.createQuery(sql)
                     .addParameter("id", id)
                     .executeUpdate();
-            return true;
         } catch (Exception e) {
             System.err.println("Error al eliminar central: " + e.getMessage());
             throw new RuntimeException("No se pudo eliminar la central", e);
         }
     }
 
-    public boolean updateCentral(CentralEntity central) {
-        String sql = "UPDATE centralentity SET name = :name, coord_x = :coord_x, coord_y = :coord_y WHERE id = :id";
+    public void updateCentral(Long id ,CentralEntity central) {
+        String sql = "UPDATE central SET name = :name, coord_x = :coord_x, coord_y = :coord_y WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             connection.createQuery(sql)
                     .addParameter("name", central.getName())
                     .addParameter("coord_x", central.getCoord_x())
                     .addParameter("coord_y", central.getCoord_y())
                     .addParameter("id", central.getId())
+                    .addParameter("id", id)
                     .executeUpdate();
-            return true;
         } catch (Exception e) {
             System.err.println("Error al actualizar central: " + e.getMessage());
             throw new RuntimeException("No se pudo actualizar la central", e);

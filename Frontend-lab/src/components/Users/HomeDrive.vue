@@ -11,16 +11,12 @@
       </button>
       <img src="/logo.png" alt="Logo empresa" class="logo" />
       <div class="profile-info">
-        <h1 class="name-employeer">Nombre del Conductor</h1>
+        <h1 class="name-employeer">{{ fullName }}</h1>
         <span class="role">Conductor</span>
       </div>
     </div>
     <div class="header-actions">
       <button class="logout-btn" @click="logout" aria-label="Cerrar sesión">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-          <path d="M7 11h8m0 0l-3-3m3 3l-3 3" stroke="#4d5d39" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="2.5" y="2.5" width="17" height="17" rx="5" stroke="#4d5d39" stroke-width="1.5"/>
-        </svg>
         <span class="logout-text">Cerrar sesión</span>
       </button>
     </div>
@@ -35,6 +31,7 @@
       </div>
       <nav class="sidebar-links">
         <a href="#" class="sidebar-link" @click="home">Inicio </a>
+        <a href="#" class="sidebar-link" @click="routeAssigned"> Rutas asignadas</a>
         <a href="#" class="sidebar-link" @click="routeTaken"> Rutas realizadas</a>
         <a href="#" class="sidebar-link">Perfil</a>
       </nav>
@@ -44,13 +41,67 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter} from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
+import { jwtDecode } from "jwt-decode"
+import DriverServices from '@/services/driverservices'
 
 const router = useRouter()
 const showSidebar = ref(false)
+const name = ref('')
+const lastname = ref('')
+const userEmail = ref("")
+const fullName = computed(() =>
+  name.value && lastname.value
+    ? `${name.value} ${lastname.value}` : null
+
+)
+
+
+onMounted(() => {
+  const token = localStorage.getItem('jwt')
+
+  if (!token) return
+
+  try {
+    const decoded = jwtDecode(token)
+    console.log("TOKEN DECODIFICADO:", decoded)
+
+    userEmail.value = decoded.sub || decoded.email || null
+
+    if (userEmail.value != null) {
+      getDriverData(userEmail.value)   // <--- OBTENER NOMBRE Y APELLIDO
+    }
+  } catch (error) {
+    console.error("Error al decodificar token:", error)
+  }
+})
+
+async function getDriverData(email) {
+    try {
+        console.log("Obteniendo driver con email:", email)
+        const response = await DriverServices.getDriverByEmail(email)
+
+        // Imprimir toda la respuesta
+        console.log("Respuesta de la API:", response)
+
+        // Asegúrate de que la respuesta tenga los campos correctos
+        const driver = response.data
+        console.log("Datos del driver:", driver)
+
+        name.value = driver.name
+        lastname.value = driver.last_name
+    } catch (err) {
+        console.error("Error obteniendo admin:", err)
+    }
+}
+
 
 function logout() {
+  const authStore = useAuthStore()
+  authStore.setToken(null)
+  localStorage.removeItem('jwt')
   router.push({ name: 'home' })
 }
 
@@ -60,6 +111,10 @@ function home() {
 
 function routeTaken() {
   router.push({ name: 'route-taken' })
+}
+
+function routeAssigned() {
+  router.push({ name: 'route-assigned' })
 }
 </script>
 

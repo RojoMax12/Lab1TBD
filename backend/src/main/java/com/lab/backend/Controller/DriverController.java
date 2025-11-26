@@ -30,6 +30,11 @@ public class DriverController {
         return driverServices.getDriverById(id);
     }
 
+    @GetMapping("/email/{email}")
+    public DriverEntity getDriverByEmail(@PathVariable String email) {
+        return driverServices.getDriverByEmail(email);
+    }
+
     @PutMapping("/{id}")
     public void updateDriver(@PathVariable Long id, @RequestBody DriverEntity driverEntity) {
         driverServices.updateDriver(id, driverEntity);
