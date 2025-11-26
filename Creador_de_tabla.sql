@@ -47,7 +47,7 @@ CREATE TABLE pickuppoint (
 CREATE TABLE route (
                        id BIGSERIAL PRIMARY KEY,
                        id_driver BIGINT REFERENCES driver(id) ON DELETE SET NULL,
-                       date_ DATE NOT NULL DEFAULT NOW(),
+                       date_ DATE NOT NULL,
                        start_time TIME,
                        end_time TIME,
                        route_status VARCHAR(50) NOT NULL,

@@ -45,6 +45,11 @@ public class RouteServices {
         }
     }
 
+    public RouteEntity findRouteById(Long id) {
+        return routeRepository.getRouteById(id);
+    }
+
+
     public List<java.util.Map<String, Object>> findInefficientRoutes() {
         return routeRepository.findInefficientRoutes();
     }

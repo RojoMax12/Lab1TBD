@@ -4,7 +4,7 @@ export default {
 
     // Obtener todos los administradores
     getAllAdmins() {
-        return api.get('/api/admin');
+        return api.get('/api/admin/');
     }
 
     // Obtener un administrador por ID

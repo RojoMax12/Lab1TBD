@@ -43,17 +43,21 @@
 
         <div class="admin-grid">
           <div class="admin-box">
-            <div class="grid-header">
-              <div>Nombre conductor</div>
-              <div>Apellido conductor</div>
-              <div>Cantidad de residuos (kg)</div>
+            <div class="grid-header-waste">
+              <div>Nombre y apellido conductor A</div>
+              <div>Cantidad de residuos (kg) A</div>
+              <div>Nombre y apellido conductor B</div>
+              <div>Cantidad de residuos (kg) B</div>
+              <div>Tipo de residuo</div>
             </div>
 
             <div class="scrollable-table">
-              <div class="grid-row" v-for="item in Wasteperformance" :key="item.driver_id">
-                <div>{{ item.driver_name }}</div>
-                <div>{{ item.driver_last_name }}</div>
-                <div>{{ item.total_waste_kg }}</div>
+              <div class="grid-row-waste" v-for="item in Wasteperformance" :key="item.driver_id">
+                <div>{{ item.driver_a_name }}</div>
+                <div>{{ item.driver_a_weight }}</div>
+                <div>{{ item.driver_b_name }}</div>
+                <div>{{ item.driver_b_weight }}</div>
+                <div>{{ item.waste_type }}</div>
               </div>
             </div>
           </div>
@@ -88,7 +92,8 @@ function fetchWastePerformance() {
   routeServices.wasteperformance()
     .then(response => {
       Wasteperformance.value = response.data
-      console.log("Desempeño de residuos:", Wasteperformance.value)
+      console.log("Desempeño de residuos:", Array.from(Wasteperformance.value));
+
     })
     .catch(error => {
       console.error("Error al obtener desempeño de residuos:", error)
@@ -166,7 +171,7 @@ function fetchWastePerformance() {
 
 .grid-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr; /* Three equally spaced columns */
+  grid-template-columns: 1fr 1fr 1fr ; /* Five equally spaced columns */
   background: #5f6949;
   color: white;
   padding: 12px 16px;
@@ -178,6 +183,27 @@ function fetchWastePerformance() {
 .grid-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr; /* Same as header */
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+  background: #f9f9f9;
+  color: #333;
+}
+
+.grid-header-waste {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr ; /* Five equally spaced columns */
+  background: #5f6949;
+  color: white;
+  padding: 12px 16px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.grid-row-waste {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr; /* Same as header */
   padding: 12px;
   border-bottom: 1px solid #ddd;
   text-align: center;

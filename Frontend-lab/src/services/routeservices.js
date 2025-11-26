@@ -22,6 +22,22 @@ export default {
 
     updatecontainerwigth(routeId, routeData) {
         return api.put(`/api/route/update-container-weight/${routeId}`, routeData);
+    },
+
+    getAllRoutes() {
+        return api.get('/api/route/');
+    },
+
+    getRouteById(routeId) {
+        return api.get(`/api/route/${routeId}`);
+    },
+
+    deleteRoute(routeId) {
+        return api.delete(`/api/route/${routeId}`);
+    },
+
+    updateRoute(routeId, routeData) {
+        return api.put(`/api/route/${routeId}`, routeData);
     }
 
 };

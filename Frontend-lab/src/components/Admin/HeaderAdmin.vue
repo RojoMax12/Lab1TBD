@@ -34,6 +34,7 @@
       <a class="sidebar-link" @click="home()">Inicio</a>
       <a class="sidebar-link" @click="container()">Contenedores</a>
       <a class="sidebar-link" @click="users()">Conductores</a>
+      <a class="sidebar-link" @click="admins()">Admins</a>
       <a class="sidebar-link" @click="rutas()">Rutas</a>
     </nav>
   </aside>
@@ -137,6 +138,11 @@ function container() {
 function rutas() {
   showSidebar.value = false
   router.push({ name: 'route' })
+}
+
+function admins() {
+  showSidebar.value = false
+  router.push({ name: 'admins' })
 }
 </script>
 

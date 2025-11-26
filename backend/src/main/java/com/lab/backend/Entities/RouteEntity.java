@@ -3,11 +3,10 @@ package com.lab.backend.Entities;
 import java.time.LocalTime;
 import java.util.Date;
 
-@SuppressWarnings("ALL")
 public class RouteEntity {
     private Long id;
     private Long id_driver;
-    private Date date;
+    private Date date_;
     private LocalTime start_time;
     private LocalTime end_time;
     private String route_status;
@@ -30,28 +29,28 @@ public class RouteEntity {
         this.id_driver = id_driver;
     }
 
-    public Date getDate_hour() {
-        return date;
+    public Date getDate_() {
+        return date_;
     }
 
-    public void setDate_hour(Date date_hour) {
-        this.date = date_hour;
+    public void setDate_(Date date_) {
+        this.date_ = date_;
     }
 
     public LocalTime getStart_time() {
         return start_time;
     }
 
-    public void setStart_time(LocalTime start_time) {
-        this.start_time = start_time;
+    public void setStart_time(String start_time) {
+        this.start_time = LocalTime.parse(start_time);
     }
 
     public LocalTime getEnd_time() {
         return end_time;
     }
 
-    public void setEnd_time(LocalTime end_time) {
-        this.end_time = end_time;
+    public void setEnd_time(String end_time) {
+        this.end_time = LocalTime.parse(end_time);
     }
 
     public String getRoute_status() {

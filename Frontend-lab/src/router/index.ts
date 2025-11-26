@@ -7,6 +7,8 @@ import RouteTakenView from '../views/User/RouteTakenView.vue'
 import UsersView from '../views/AdminView/UsersView.vue'
 import ContainersView from '../views/AdminView/ContainerView.vue'
 import RouteView from '../views/AdminView/RouteView.vue'
+import AdminsView from '../views/AdminView/AdminsView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,7 +19,8 @@ const router = createRouter({
     { path: '/route-taken', name: 'route-taken', component: RouteTakenView },
     { path: '/users', name: 'users', component: UsersView },
     { path: '/container', name: 'containers', component: ContainersView },
-    { path: '/route', name: 'route', component: RouteView }
+    { path: '/route', name: 'route', component: RouteView },
+    { path: '/admins', name: 'admins', component: AdminsView }
   ]
 })
 

@@ -1,5 +1,6 @@
 package com.lab.backend.Controller;
 
+import com.lab.backend.Entities.RouteEntity;
 import com.lab.backend.Services.RouteServices;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,27 @@ public class RouteController {
         public Long idDriver;
         public Long idCentral;
         public Long idPickUpPoint;
+    }
+
+    @GetMapping("/")
+    public List<RouteEntity> findAllRoute(){
+        return routeService.findAllRoutes();
+    }
+
+    @GetMapping("/{id}")
+    public RouteEntity findRouteById(@PathVariable Long id){
+        return routeService.findRouteById(id);
+    }
+
+
+    @PutMapping("/{id}")
+    public void updateRoute(Long id, @RequestBody RouteEntity route){
+        routeService.updateRoute(id, route);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteRoute(@PathVariable Long id){
+        routeService.deleteRoute(id);
     }
 
     @PostMapping("/planroute")

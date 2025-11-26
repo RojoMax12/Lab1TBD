@@ -109,11 +109,11 @@
           </tr>
         </thead>
 
-        <tbody>
+        <tbody class="Data-text">
           <tr v-for="r in rutas" :key="r.id">
             <td>{{ r.id }}</td>
             <td>{{ r.id_driver }}</td>
-            <td>{{ r.date }}</td>
+            <td>{{ r.date_ }}</td>
             <td>{{ r.start_time }}</td>
             <td>{{ r.end_time }}</td>
             <td>{{ r.route_status }}</td>
@@ -130,38 +130,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import { onMounted } from 'vue'
 import HomeAdminView from '@/components/Admin/HeaderAdmin.vue'
+import routeServices from '@/services/routeservices'
 
 /* MODAL */
 const mostrarModal = ref(false)
-
-/* DATOS DE PRUEBA */
-const drivers = ref([
-  { id: 1, name: "Carlos Soto" },
-  { id: 2, name: "María Reyes" },
-  { id: 3, name: "Juan Morales" }
-])
-
-const centrales = ref([
-  { id: 1, nombre: "Central Norte" },
-  { id: 2, nombre: "Central Sur" },
-  { id: 3, nombre: "Central Este" }
-])
-
-const puntosRetiro = ref([
-  { id: 10, descripcion: "Plaza central" },
-  { id: 11, descripcion: "Sector industrial" },
-  { id: 12, descripcion: "Costanera" }
-])
-
-const contenedores = ref([
-  { id: 1, status: "Lleno", id_central: 1 },
-  { id: 2, status: "En uso", id_central: 2 },
-  { id: 3, status: "Disponible", id_central: 3 },
-  { id: 4, status: "Lleno", id_central: 2 },
-  { id: 5, status: "Mantenimiento", id_central: 1 }
-])
-
+const contenedores = ref([])
 /* RUTAS PLANIFICADAS */
 const rutas = ref([])
 
@@ -207,6 +182,27 @@ function guardarRuta() {
   contenedoresSeleccionados.value = []
   mostrarModal.value = false
 }
+
+function fetchrutas () {
+  routeServices.getAllRoutes()
+    .then(response => {
+      rutas.value = response.data.map(ruta => ({
+        ...ruta,
+        contenedores: ruta.contenedores || []
+      }))
+      contenedores.value = response.data.contenedores || []
+      console.log(response.data)
+    })
+    .catch(error => {
+      console.error("Error fetching routes:", error)
+    })
+}
+
+onMounted(() => {
+  fetchrutas()
+})
+
+
 </script>
 
 <style scoped>
@@ -259,7 +255,7 @@ function guardarRuta() {
   padding: 20px ;
   border-radius: 10px;
   width: 420px;
-  color: #333;
+  color: #ffffff;
 }
 
 .label {
@@ -329,5 +325,14 @@ function guardarRuta() {
   background: #f7f7f7;
   padding: 12px;
   border-bottom: 1px solid #ddd;
+}
+
+.horizontal-scroll {
+  overflow-x: auto;
+}
+
+.Data-text {
+  color: #4a4f37;
+  text-align: center;
 }
 </style>

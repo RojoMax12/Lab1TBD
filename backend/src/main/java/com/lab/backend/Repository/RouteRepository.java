@@ -4,6 +4,8 @@ import org.springframework.stereotype.Repository;
 
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
+import org.sql2o.Sql2oException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,18 @@ public class RouteRepository {
         } catch (Exception e) {
             System.err.println("Error al crear la ruta: " + e.getMessage());
             throw new RuntimeException("No se pudo crear la ruta", e);
+        }
+    }
+    public RouteEntity getRouteById(Long id) {
+        String sql = "SELECT * FROM route WHERE id = :id";
+        try (Connection connection = sql2o.open()) {
+            return connection.createQuery(sql)
+                    .addParameter("id", id)
+                    .executeAndFetchFirst(RouteEntity.class);
+
+        } catch (Sql2oException e){
+            System.err.println("Error al consultar la ruta: ");
+            throw new RuntimeException("No se pudo consultar la ruta", e);
         }
     }
 
