@@ -97,7 +97,7 @@
 
   <div class = "container-wrapper3">
     <h1 class  = "title">Contenedores  con problemas</h1>
-     
+
       <div class="grid-header">
         <div>ID</div>
         <div>Coord X</div>
@@ -105,7 +105,7 @@
         <div>Estado</div>
         <div>Tipo de residuo</div>
       </div>
-    
+
     <div class = "scrollable-table">
       <div
         v-for="contenedorproblema in contenedoresconproblemas"
@@ -117,6 +117,33 @@
         <div>{{ contenedorproblema.coord_y }}</div>
         <div>{{ contenedorproblema.status }}</div>
         <div>{{ contenedorproblema.tipo_residuo }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class = "container-wrapper4">
+    <h1 class = "title">Análisis de Densidad</h1>
+
+    <div class = "grid-header-density">
+      <div>Mes</div>
+      <div>Promedio Contenedor/Ruta</div>
+      <div>Diferencia mes anterior</div>
+    </div>
+
+    <div class="scrollable-table">
+      <div
+        v-for="contenedordensidad in analisisdensidad"
+        :key="contenedordensidad.id"
+        class="grid-row-density"
+      >
+        <div>{{ contenedordensidad.month }}</div>
+        <div>{{ contenedordensidad.average_containers }}</div>
+
+        <div :style="{ color: contenedordensidad.diff_vs_prev_month > 0 ? '#d1655d' : (contenedordensidad.diff_vs_prev_month < 0 ? 'green' : 'black') }">
+          {{ contenedordensidad.diff_vs_prev_month !== null ? contenedordensidad.diff_vs_prev_month : '-' }}
+          <span v-if="contenedordensidad.diff_vs_prev_month > 0">⬆</span>
+          <span v-if="contenedordensidad.diff_vs_prev_month < 0">⬇</span>
+        </div>
       </div>
     </div>
   </div>
@@ -140,6 +167,7 @@ export default {
     const contenedores = ref([])
     const contenedoressinrecolectar = ref([])
     const contenedoresconproblemas = ref([])
+    const analisisdensidad = ref([])
     const nuevoContenedor = ref({
       id: null,
       id_waste: '',
@@ -171,7 +199,7 @@ export default {
         })
     }
 
-    
+
 
     const obtenerContenedoresSinRecolectar = () => {
       containerServices.ContainersWithoutCollection()
@@ -184,11 +212,25 @@ export default {
         })
     }
 
-  
+
+
+    const obtenerAnalisisDensidad = () => {
+      containerServices.DensityAnalysisContainer()
+        .then(response => {
+          analisisdensidad.value = response.data
+          console.log(response.data)
+        })
+        .catch(error => {
+          console.error("Error al realizar el Análisis de densidad", error)
+        })
+    }
+
+
     onMounted(() => {
       obtenerContenedores()
       obtenerContenedoresSinRecolectar()
       obtenerContenedoresConProblemas()
+      obtenerAnalisisDensidad()
     })
 
     // Abrir modal para nuevo
@@ -262,6 +304,7 @@ export default {
       contenedores,
       contenedoressinrecolectar,
       contenedoresconproblemas,
+      analisisdensidad,
       nuevoContenedor,
       abrirModalNuevo,
       abrirModalEditar,
@@ -294,6 +337,15 @@ export default {
 }
 
 .container-wrapper3 {
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 12px;
+  width: 1000px;
+  margin: 40px auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.container-wrapper4 {
   background-color: #f9f9f9;
   padding: 25px;
   border-radius: 12px;
@@ -352,6 +404,29 @@ export default {
   border-bottom: 1px solid #000000;
   color: #000000;
 }
+
+/*Tabla 3 columnas*/
+.grid-header-density, .grid-row-density {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* 3 columnas de igual tamaño */
+  padding: 12px;
+  text-align: center;
+  align-items: center;
+}
+
+.grid-header-density {
+  background: #52563f;
+  color: rgb(255, 255, 255);
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.grid-row-density {
+  background: white;
+  border-bottom: 1px solid #000000;
+  color: #000000;
+}
+/*Fin tabla 3 columnas*/
 
 .row-actions {
   display: flex;
