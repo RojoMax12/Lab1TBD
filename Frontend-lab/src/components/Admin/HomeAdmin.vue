@@ -2,7 +2,7 @@
   <div>
     <HeaderAdmin />
   </div>
-  
+
   <div class="admin-container">
     <!-- Header -->
 
@@ -104,7 +104,7 @@ function fetchWastePerformance() {
 <style scoped>
 /* General page styles */
 .admin-container {
-  min-height: 100vh;
+  min-height: auto;
   background-color: #f4e9da;
   padding: 20px;
 }
@@ -144,7 +144,7 @@ function fetchWastePerformance() {
   right: -760px;
   top: -20px;
   margin-bottom: auto;
-  
+
 }
 
 .calculate-btn:hover {
@@ -222,7 +222,7 @@ function fetchWastePerformance() {
   .admin-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .admin-box {
     width: 100%;
     max-width: 100%;
