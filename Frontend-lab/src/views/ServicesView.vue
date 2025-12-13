@@ -92,7 +92,6 @@
 <script setup>
 import Header from '@/components/Home/Header.vue'
 import Footer from '@/components/Home/Footer.vue'
-import { Truck, Recycle, Trash2, MapPin, TriangleAlert, ChartNoAxesCombined } from 'lucide-vue-next';
 </script>
 
 <style scoped>

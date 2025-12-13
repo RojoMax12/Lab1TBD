@@ -17,6 +17,7 @@
     <!-- ============================
           MODAL PLANIFICACIÓN
     ============================ -->
+    
     <div v-if="mostrarModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal">
 
@@ -414,7 +415,9 @@ onMounted(() => {
 
 .horizontal-scroll {
   overflow-x: auto;
+  max-height: 600px;
 }
+
 
 .Data-text {
   color: #4a4f37;

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+
 import HomeView from '../views/HomeView.vue'
 import HomeDriverView from '../views/User/HomeDriverView.vue'
 import HomeAdminView from '../views/AdminView/HomeAdminView.vue'
@@ -11,6 +12,8 @@ import AdminsView from '../views/AdminView/AdminsView.vue'
 import RouteAssignedView from '@/views/User/RouteAssignedView.vue'
 import CentralView from '@/views/AdminView/CentralView.vue'
 import ServicesView from '../views/ServicesView.vue'
+import ContactView from '../views/ContactView.vue'
+import WhoWeAreView from '@/views/WhoWeAreView.vue'
 
 
 const router = createRouter({
@@ -26,7 +29,10 @@ const router = createRouter({
     { path: '/admins', name: 'admins', component: AdminsView, meta: { requiresAuth: true } },
     { path: '/route-assigned', name: 'route-assigned', component: RouteAssignedView },
     { path: '/centrals', name: 'centrals', component: CentralView, meta: { requiresAuth: true } },
-    { path: '/services', name: 'services', component: ServicesView}
+    { path: '/services', name: 'services', component: ServicesView},
+    { path: '/contact', name: 'contact', component: ContactView},
+    { path: '/whoweare', name: 'whoweare', component: WhoWeAreView},
+
   ]
 })
 

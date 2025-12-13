@@ -2,14 +2,14 @@
   <header class="header" role="banner">
     <div class="left">
       <div class="logo-container">
-        <img src="/logo.png" alt="Logo Trash TBD" class="logo" />
+        <img src="/logoact.png" alt="Logo Trash TBD" class="logo" />
         <h1 class="site-title">CleanOps</h1>
       </div>
 
       <nav class="nav" aria-label="Main navigation">
-        <a href="#" class="nav-link">Inicio</a>
+        <a href="#" class="nav-link" @click="Home">Inicio</a>
         <router-link to="/services" class="nav-link">Servicios</router-link>
-        <a href="#" class="nav-link">Contacto</a>
+        <a href="#" class="nav-link" @click="Contact">Contacto</a>
       </nav>
     </div>
 
@@ -32,9 +32,11 @@
 import { ref } from "vue"
 import LoginModal from "./LoginModal.vue" // ajusta la ruta si está en otra carpeta
 import { useAuthStore } from '../../stores/auth'
+import { useRouter } from 'vue-router'
 
 const showLogin = ref(false)
 const auth = useAuthStore()
+const router = useRouter()
 auth.initFromStorage()
 
 function onLoggedIn(token) {
@@ -43,6 +45,15 @@ function onLoggedIn(token) {
 
 function onLogout() {
   auth.clear()
+}
+
+function Home() {
+  router.push({name: 'home'})
+
+}
+
+function Contact() {
+  router.push({name: 'contact'})
 }
 </script>
 
@@ -77,11 +88,10 @@ function onLogout() {
 }
 
 .logo {
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  border-radius: 10px;
 }
 
 .site-title {

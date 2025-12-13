@@ -2,11 +2,7 @@
   <footer class="footer" role="contentinfo" aria-label="Pie de página" ref="footerRef">
     <div class="footer-inner">
       <nav class="footer-links" aria-label="Enlaces">
-        <a href="#" class="link">Quienes somos</a>
-        <span class="sep" aria-hidden="true">|</span>
-        <a href="#" class="link">Contacto</a>
-        <span class="sep" aria-hidden="true">|</span>
-        <a href="#" class="link">Trabaja con nosotros</a>
+        <a href="#" class="link" @click="whoweare">Quienes somos</a>
       </nav>
 
       <div class="footer-copy">© <span>{{ year }}</span> CleanOps</div>
@@ -16,9 +12,11 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 
 const year = new Date().getFullYear()
 const footerRef = ref(null)
+const route = useRouter()
 
 function updateBodyPadding() {
   if (!footerRef.value) return
@@ -35,6 +33,11 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateBodyPadding)
   document.body.style.paddingBottom = ''
 })
+
+function whoweare () {
+  route.push({name : 'whoweare'})
+}
+
 </script>
 
 <style scoped>
