@@ -8,7 +8,7 @@
 
       <nav class="nav" aria-label="Main navigation">
         <a href="#" class="nav-link">Inicio</a>
-        <a href="#" class="nav-link">Servicios</a>
+        <router-link to="/services" class="nav-link">Servicios</router-link>
         <a href="#" class="nav-link">Contacto</a>
       </nav>
     </div>

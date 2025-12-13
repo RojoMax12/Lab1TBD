@@ -8,13 +8,13 @@
       <div class="categories-body">
         <h2 id="categories-title">Nos encargamos de todo tipo de residuos</h2>
         <p class="categories-text">
-          Ofrecemos servicios integrales de recolección y gestión de residuos: 
+          Ofrecemos servicios integrales de recolección y gestión de residuos:
           orgánicos, inorgánicos, papel, plástico, metal, vidrio, madera y textil.
           Soluciones seguras, responsables y sostenibles adaptadas a tu comunidad.
         </p>
 
         <div class="actions">
-          <a href="#servicios" class="btn">Ver servicios</a>
+          <router-link to="/services" class="btn">Ver servicios</router-link>
         </div>
       </div>
     </div>

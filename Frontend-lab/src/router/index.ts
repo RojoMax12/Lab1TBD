@@ -10,6 +10,7 @@ import RouteView from '../views/AdminView/RouteView.vue'
 import AdminsView from '../views/AdminView/AdminsView.vue'
 import RouteAssignedView from '@/views/User/RouteAssignedView.vue'
 import CentralView from '@/views/AdminView/CentralView.vue'
+import ServicesView from '../views/ServicesView.vue'
 
 
 const router = createRouter({
@@ -24,7 +25,8 @@ const router = createRouter({
     { path: '/route', name: 'route', component: RouteView, meta: { requiresAuth: true } },
     { path: '/admins', name: 'admins', component: AdminsView, meta: { requiresAuth: true } },
     { path: '/route-assigned', name: 'route-assigned', component: RouteAssignedView },
-    { path: '/centrals', name: 'centrals', component: CentralView, meta: { requiresAuth: true } }
+    { path: '/centrals', name: 'centrals', component: CentralView, meta: { requiresAuth: true } },
+    { path: '/services', name: 'services', component: ServicesView}
   ]
 })
 
