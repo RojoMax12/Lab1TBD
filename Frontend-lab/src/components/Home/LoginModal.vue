@@ -22,8 +22,24 @@
             <label for="password" class="label">Contraseña</label>
             <div class="password-container">
               <input id="password" :type="showPassword ? 'text' : 'password'" v-model="password" placeholder="Contraseña" required aria-describedby="password-error" />
-              <button type="button" class="eye-btn" @click="togglePasswordVisibility" :aria-pressed="showPassword" :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-                👁️
+              <button
+                type="button"
+                class="eye-btn"
+                @click="togglePasswordVisibility"
+                :aria-pressed="showPassword"
+                :title="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              >
+                <!-- Eye (visible) -->
+                <svg v-if="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="#333" stroke-width="1.5"/>
+                </svg>
+                <!-- Eye Off (hidden) -->
+                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.2 20.2 0 0 1 3.11-4.43" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M1 1l22 22" stroke="#333" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </button>
             </div>
             <div v-if="passwordError" id="password-error" class="error">{{ passwordError }}</div>
@@ -306,20 +322,29 @@ input {
 
 /* Contenedor de contraseña con botón ojo */
 .password-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  /* make container a positioned box so the eye button can be absolutely positioned inside the input */
+  position: relative;
+  width: 100%;
+  max-width: 360px;
 }
 
 .password-container input {
-  flex: 1;
+  width: 100%;
+  padding-right: 3rem; /* room for the eye button inside the input */
+  box-sizing: border-box;
 }
 
-.password-container button {
+.password-container .eye-btn {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  padding: 0.2rem;
+  color: #333;
 }
 
 /* Botón login */
