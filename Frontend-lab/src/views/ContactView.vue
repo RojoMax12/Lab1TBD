@@ -56,30 +56,32 @@ const form = ref({
 });
 
 function submitForm() {
-  // Aquí puedes agregar la lógica para enviar el formulario, ya sea mediante una API o cualquier otro método.
+  // Lógica para enviar el formulario
   console.log('Formulario enviado', form.value);
   alert('¡Gracias por contactarnos!');
-  form.value = { name: '', email: '', subject: '', message: '' }; // Limpiar el formulario después de enviarlo
+  form.value = { name: '', email: '', subject: '', message: '' }; // Limpiar formulario después de enviarlo
 }
 </script>
 
 <style scoped>
 :root {
-  --bg-start: #6a704a;
-  --bg-end: #4e5336;
+  --green-start: #4e5336;  /* Verde más oscuro */
+  --green-end: #6a704a;    /* Verde más claro */
+  --text-color: #000000;    /* Texto negro */
+  --button-text-color: #ffffff; /* Texto blanco en botones */
 }
 
 .contact-container {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 3rem 2rem;
   font-family: 'Roboto', sans-serif;
 }
 
 .contact-hero {
   text-align: center;
-  margin-bottom: 3rem;
-  background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  margin-bottom: 0.1rem;
+  background: linear-gradient(180deg, var(--green-start), var(--green-end)); /* Fondo verde */
   padding: 4rem 2rem;
   border-radius: 8px;
 }
@@ -87,13 +89,13 @@ function submitForm() {
 .contact-title {
   font-size: 2.8rem;
   font-weight: 700;
-  color: #fff;
+  color: black; /* Texto blanco */
   margin-bottom: 15px;
 }
 
 .contact-subtitle {
   font-size: 1.2rem;
-  color: #ecf0f1;
+  color: black; /* Texto blanco */
   max-width: 750px;
   margin: 0 auto;
   line-height: 1.6;
@@ -101,7 +103,7 @@ function submitForm() {
 }
 
 .contact-form-section {
-  background-color: #ecf0f1;
+  background-color: #4e5336;
   padding: 3rem 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -114,7 +116,7 @@ function submitForm() {
 .form-label {
   display: block;
   font-size: 1rem;
-  color: #2c3e50;
+  color: white; /* Texto negro */
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
@@ -123,14 +125,14 @@ function submitForm() {
   width: 100%;
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #bdc3c7;
+  border: 1px solid #000000;
   font-size: 1rem;
   background-color: #fff;
   transition: border 0.3s ease;
 }
 
 .form-input:focus {
-  border-color: #3498db;
+  border-color: var(--green-start);  /* Borde verde en el foco */
   outline: none;
 }
 
@@ -139,19 +141,22 @@ textarea.form-input {
 }
 
 .submit-btn {
-  background-color: var(--bg-start);
-  color: white;
+  background-color: white;  /* Botón verde */
+  color: #6a704a;  /* Texto blanco */
   padding: 1rem 2rem;
   border-radius: 50px;
   border: none;
   font-size: 1.2rem;
   cursor: pointer;
   width: 100%;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .submit-btn:hover {
-  background-color: var(--bg-end);
+  background-color: var(--green-end);  /* Fondo verde claro en hover */
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
