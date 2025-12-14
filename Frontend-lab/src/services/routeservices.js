@@ -49,6 +49,10 @@ export default {
         return api.get(`/api/route/${routeId}`);
     },
 
+    findRouteByStatusAndIdDriver(IdDriver, status){ 
+        return api.get(`/api/route/status/${IdDriver}/${status}`);
+    }
+    ,
     // Eliminar ruta
     deleteRoute(routeId) {
         return api.delete(`/api/route/${routeId}`);

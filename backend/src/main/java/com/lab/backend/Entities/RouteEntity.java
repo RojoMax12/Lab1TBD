@@ -19,9 +19,7 @@ public class RouteEntity {
     public Long getId_driver() { return id_driver; }
     public void setId_driver(Long id_driver) { this.id_driver = id_driver; }
 
-    public Long getId_driver() {
-        return id_driver;
-    }
+
 
     public Time getStart_time() { return start_time; }
     public void setStart_time(Time start_time) { this.start_time = start_time; }

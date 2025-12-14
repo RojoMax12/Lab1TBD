@@ -30,6 +30,9 @@ public class RouteServices {
     public List<RouteEntity> getAllRoutesByIddriverFinish(Long iddriver) {
         return routeRepository.getAllRoutesByDriverFinish(iddriver);
     }
+    public RouteEntity getRouteByIdDriverAndStatus(Long id, String status) {
+        return routeRepository.getRouteByIdDriverAndStatus(id, status);
+    }
 
     public List<RouteEntity> findAllRoutes() {
         return routeRepository.getAllRoutes();

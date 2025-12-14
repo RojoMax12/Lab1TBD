@@ -44,6 +44,11 @@ public class RouteController {
         return routeService.findRouteById(id);
     }
 
+    @GetMapping("/status/{iddriver}/{status}")
+    public RouteEntity findRouteByStatusAndIdDriver(@PathVariable Long iddriver, @PathVariable String status){
+        return routeService.getRouteByIdDriverAndStatus(iddriver, status);
+    }
+
     @PutMapping("/{id}")
     public void updateRoute(Long id, @RequestBody RouteEntity route){
         routeService.updateRoute(id, route);

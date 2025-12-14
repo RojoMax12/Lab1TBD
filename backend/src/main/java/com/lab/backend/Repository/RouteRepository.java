@@ -48,6 +48,26 @@ public class RouteRepository {
         }
     }
 
+    public RouteEntity getRouteByIdDriverAndStatus(Long idDriver, String status) {
+        String sql = "SELECT * FROM route WHERE id_driver = :id_driver AND route_status = :status";
+        try (Connection connection = sql2o.open()) {
+            RouteEntity route = connection.createQuery(sql)
+                    .addParameter("id_driver", idDriver)
+                    .addParameter("status", status)
+                    .executeAndFetchFirst(RouteEntity.class);
+
+            if (route == null) {
+                throw new RuntimeException("No se encontró ninguna ruta para el conductor con id: " + idDriver + " y estado: " + status);
+            }
+
+            return route;
+        } catch (Sql2oException e){
+            System.err.println("Error al consultar la ruta: ");
+            throw new RuntimeException("No se pudo consultar la ruta", e);
+        }
+    }
+
+
     public List<RouteEntity> getAllRoutes() {
         String sql = "SELECT * FROM route";
         try (Connection conn = sql2o.open()) {

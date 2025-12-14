@@ -22,54 +22,133 @@
         <div class="grid">
           <div>
             <span class="label">Fecha - hora</span>
-            <input class="value-input" readonly value="12/11/2025 - 09:30" />
+            <input class="value-input" readonly v-model="routeactual.date" />
           </div>
           <div>
             <span class="label">Estado ruta</span>
-            <input class="value-input" readonly value="Completada" />
+            <input class="value-input" readonly v-model="routeactual.route_status" />
           </div>
           <div>
             <span class="label">Central inicio</span>
-            <input class="value-input" readonly value="Central Norte" />
+            <input class="value-input" readonly v-model="routeactual.id_central" />
           </div>
           <div>
             <span class="label">Central fin</span>
-            <input class="value-input" readonly value="Central Sur" />
+            <input class="value-input" readonly v-model="routeactual.id_central_finish" />
           </div>
           <div>
             <span class="label">Coordenada inicio</span>
-            <input class="value-input" readonly value="-33.45, -70.66" />
+            <input class="value-input" readonly v-model="routeactual.start_coords" />
           </div>
           <div>
             <span class="label">Coordenada fin</span>
-            <input class="value-input" readonly value="-33.48, -70.62" />
+            <input class="value-input" readonly v-model="routeactual.end_coords" />
           </div>
         </div>
 
         <div class="full-width-box">
           <span class="label">Punto siguiente</span>
-          <input class="value-input" readonly value="-33.47, -70.64" />
+          <input class="value-input" readonly v-model="routeactual.next_point" />
         </div>
         <div class="full-width-box">
           <span class="label">Tipo de residuo</span>
-          <input class="value-input" readonly value="Orgánico" />
+          <input class="value-input" readonly v-model="routeactual.waste_type" />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>  
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import DriverServices from '@/services/driverservices';
+import RouteServices from '@/services/routeservices';
+import { jwtDecode } from "jwt-decode";
 
-import { useRouter } from 'vue-router'
-console.log("ContentDrive cargado")
+const router = useRouter();
 
-const router = useRouter()
+const name = ref('');
+const lastname = ref('');
+const userEmail = ref('');
+const routeactual = ref({
+  date: '',
+  route_status: '',
+  id_central: '',
+  id_central_finish: '',
+  start_coords: '',
+  end_coords: '',
+  next_point: '',
+  waste_type: ''
+});
 
-function routeAssigned() { 
-  router.push({ name: 'route-assigned' }) // Redirige a la vista de ruta asignada
+onMounted(() => {
+  const token = localStorage.getItem('jwt');
+  if (!token) return;
+
+  try {
+    const decoded = jwtDecode(token);
+    console.log("TOKEN DECODIFICADO:", decoded);
+    userEmail.value = decoded.sub || decoded.email || null;
+
+    if (userEmail.value) {
+      getDriverData(userEmail.value);
+    }
+  } catch (error) {
+    console.error("Error al decodificar token:", error);
+  }
+});
+
+async function getDriverData(email) {
+  try {
+    console.log("Obteniendo driver con email:", email);
+    const response = await DriverServices.getDriverByEmail(email);
+
+    // Asignar datos al conductor
+    const driver = response.data;
+    console.log("Datos del driver:", driver);
+    name.value = driver.name;
+    lastname.value = driver.last_name;
+
+    if (driver.id) {
+      // Obtener ruta asignada en "En Proceso"
+      getactualroute(driver.id);
+    }
+  } catch (err) {
+    console.error("Error obteniendo admin:", err);
+  }
 }
 
+function getactualroute(driverId) {
+  try {
+    const response = RouteServices.findRouteByStatusAndIdDriver(driverId, 'EnProceso');
+    console.log("Response data:", response.data);
+    
+    // Check if the route exists
+    if (response.data && response.data.length > 0) {
+      const route = response.data[0]; // Assuming only one route is returned
+
+      // Update the route details in the UI
+      routeactual.value.date = route.date_;
+      routeactual.value.route_status = route.route_status;
+      routeactual.value.id_central = route.id_central;
+      routeactual.value.id_central_finish = route.id_central_finish;
+      routeactual.value.start_coords = `${route.coord_x_start}, ${route.coord_y_start}`;
+      routeactual.value.end_coords = `${route.coord_x_end}, ${route.coord_y_end}`;
+      routeactual.value.next_point = route.next_point || ''; // Assuming next_point might not be set
+      routeactual.value.waste_type = route.waste_type || ''; // Assuming waste_type might not be set
+    } else {
+      console.error("No se encontró una ruta en proceso para este conductor.");
+    }
+  } catch (error) {
+    console.error("Error al obtener la ruta en proceso:", error);
+  }
+}
+
+
+function routeAssigned() {
+  router.push({ name: 'route-assigned' }); // Redirige a la vista de ruta asignada
+}
 </script>
 
 <style scoped>
