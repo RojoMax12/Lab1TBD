@@ -186,6 +186,7 @@ import centralServices from '@/services/centralservices'
 import containerServices from '@/services/containerservices'
 import routeServices from '@/services/routeservices'
 import pickUpServices from '@/services/pickupservices'
+import routeContainerServices from '@/services/router_containerservices'
 /* MODAL */
 const mostrarModal = ref(false)
 const contenedores = ref([])
@@ -291,18 +292,37 @@ function guardarRuta() {
   mostrarModal.value = false
 }
 
-
 async function fetchRutas() {
   try {
-    const res = await routeServices.getAllRoutes()
-    const data = res
-    // routeServices returns parsed JSON via api adapter; ensure array
-    const list = Array.isArray(data) ? data : (data.data || [])
-    rutas.value = list.map(ruta => ({ ...ruta, contenedores: ruta.contenedores || [] }))
+    // 1️⃣ Obtener todas las rutas planificadas
+    const res = await routeServices.getAllRoutes();
+    const rutasData = Array.isArray(res.data) ? res.data : res;
+
+    // 2️⃣ Para cada ruta, obtener sus contenedores asociados
+    const rutasConContenedores = await Promise.all(
+      rutasData.map(async (ruta) => {
+        try {
+          const contRes = await routeContainerServices.getRouteContainersByRoute(ruta.id);
+          const contenedores = Array.isArray(contRes.data)
+            ? contRes.data.map(c => c.id_container) // solo IDs de contenedores
+            : [];
+
+          return { ...ruta, contenedores };
+        } catch (err) {
+          console.error(`No se pudieron cargar contenedores de la ruta ${ruta.id}`, err);
+          return { ...ruta, contenedores: [] };
+        }
+      })
+    );
+
+    // 3️⃣ Guardar el resultado en el estado de Vue
+    rutas.value = rutasConContenedores;
+
   } catch (e) {
-    console.error('Error fetching routes:', e)
+    console.error('Error fetching routes:', e);
   }
 }
+
 
 async function fetchDrivers() {
   try {

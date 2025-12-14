@@ -22,11 +22,11 @@ public class Route_ContainerRepository {
         String sql = "INSERT INTO route_container (container_id, route_id) VALUES (:container_id, :route_id)";
         try (Connection connection = sql2o.open()) {
             Long id = connection.createQuery(sql, true)
-                    .addParameter("container_id", routeContainerEntity.getContainer_id())
-                    .addParameter("route_id", routeContainerEntity.getRoute_id())
+                    .addParameter("container_id", routeContainerEntity.getId_container())
+                    .addParameter("route_id", routeContainerEntity.getId_route())
                     .executeUpdate()
                     .getKey(Long.class);
-            routeContainerEntity.setRoute_container_id(id);
+            routeContainerEntity.setId(id);
             return routeContainerEntity;
         } catch (Sql2oException e) {
             System.err.println("Error al insertar el route_container: " + e.getMessage());
@@ -60,15 +60,22 @@ public class Route_ContainerRepository {
     }
 
     public List<Route_ContainerEntity> getRouteContainersByRouteId(Long routeId) {
-        String sql = "SELECT * FROM route_container WHERE route_id = :route_id";
+        String sql = """
+        SELECT 
+            id,
+            id_route,
+            id_container
+        FROM route_container
+        WHERE id_route = :id_route
+    """;
+
         try (Connection connection = sql2o.open()) {
-            // Ejecutar la consulta y devolver el resultado
             return connection.createQuery(sql)
-                    .addParameter("route_id", routeId)
-                    .executeAndFetch(Route_ContainerEntity.class);  // Aquí retornamos el resultado
+                    .addParameter("id_route", routeId)
+                    .executeAndFetch(Route_ContainerEntity.class);
         } catch (Sql2oException e) {
-            System.err.println("Error al obtener el route_container por id: " + e.getMessage());
-            throw new RuntimeException("No se pudo obtener el route_container", e);
+            System.err.println("❌ Error al obtener contenedores por id de ruta: " + e.getMessage());
+            throw new RuntimeException("No se pudieron obtener los contenedores de la ruta " + routeId, e);
         }
     }
 
@@ -84,4 +91,22 @@ public class Route_ContainerRepository {
             throw new RuntimeException("No se pudo eliminar el route_container");
         }
     }
+
+    public List<Route_ContainerEntity> getRouteContainerByContainerId(Long containerId) {
+        String sql = """
+        SELECT * 
+        FROM route_container
+        WHERE id_container = :containerId
+    """;
+
+        try (Connection con = sql2o.open()) {
+            return con.createQuery(sql)
+                    .addParameter("containerId", containerId)
+                    .executeAndFetch(Route_ContainerEntity.class);
+        } catch (Exception e) {
+            System.err.println("❌ Error al obtener rutas por id de contenedor: " + e.getMessage());
+            throw new RuntimeException("No se pudieron obtener las rutas asociadas al contenedor " + containerId, e);
+        }
+    }
+
 }

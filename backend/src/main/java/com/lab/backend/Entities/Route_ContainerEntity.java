@@ -1,31 +1,32 @@
 package com.lab.backend.Entities;
 
 public class Route_ContainerEntity {
-    Long route_container_id;
-    Long container_id;
-    Long route_id;
+    private Long id;
+    private Long id_route;
+    private Long id_container;
 
-    public Long getRoute_container_id() {
-        return route_container_id;
+    // Getters y setters
+    public Long getId() {
+        return id;
     }
 
-    public void setRoute_container_id(Long route_container_id) {
-        this.route_container_id = route_container_id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Long getContainer_id() {
-        return container_id;
+    public Long getId_route() {
+        return id_route;
     }
 
-    public void setContainer_id(Long container_id) {
-        this.container_id = container_id;
+    public void setId_route(Long id_route) {
+        this.id_route = id_route;
     }
 
-    public Long getRoute_id() {
-        return route_id;
+    public Long getId_container() {
+        return id_container;
     }
 
-    public void setRoute_id(Long route_id) {
-        this.route_id = route_id;
+    public void setId_container(Long id_container) {
+        this.id_container = id_container;
     }
 }
