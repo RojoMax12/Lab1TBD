@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/routecontainer")
 public class Route_ContainerController {
 
 
@@ -30,6 +31,11 @@ public class Route_ContainerController {
     @GetMapping("/{id}")
     public Route_ContainerEntity getRouteContainerById(@PathVariable Long id) {
         return routeContainerService.getRouteContainerById(id);
+    }
+
+    @GetMapping("/container/{id}")
+    public List<Route_ContainerEntity> getRouteContainerByContainer(@PathVariable Long id) {
+        return routeContainerService.getRouteContainersByRoute(id);
     }
 
     // Endpoint para eliminar un Route_Container por ID

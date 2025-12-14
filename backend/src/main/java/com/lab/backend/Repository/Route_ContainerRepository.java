@@ -1,5 +1,6 @@
 package com.lab.backend.Repository;
 
+import com.lab.backend.Entities.Route_ContainerEntity;
 import org.springframework.stereotype.Repository;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -17,7 +18,7 @@ public class Route_ContainerRepository {
     }
 
     // Crear nuevo Route_Container
-    public com.lab.backend.Entities.Route_ContainerEntity createRouteContainer(com.lab.backend.Entities.Route_ContainerEntity routeContainerEntity) {
+    public Route_ContainerEntity createRouteContainer(Route_ContainerEntity routeContainerEntity) {
         String sql = "INSERT INTO route_container (container_id, route_id) VALUES (:container_id, :route_id)";
         try (Connection connection = sql2o.open()) {
             Long id = connection.createQuery(sql, true)
@@ -34,7 +35,7 @@ public class Route_ContainerRepository {
     }
 
     // Obtener todos los Route_Container
-    public List<com.lab.backend.Entities.Route_ContainerEntity> getAllRouteContainers() {
+    public List<Route_ContainerEntity> getAllRouteContainers() {
         String sql = "SELECT * FROM route_container";
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql)
@@ -46,7 +47,7 @@ public class Route_ContainerRepository {
     }
 
     // Obtener Route_Container por ID
-    public com.lab.backend.Entities.Route_ContainerEntity getRouteContainerById(Long id) {
+    public Route_ContainerEntity getRouteContainerById(Long id) {
         String sql = "SELECT * FROM route_container WHERE route_container_id = :id";
         try (Connection connection = sql2o.open()) {
             return connection.createQuery(sql)
@@ -55,6 +56,19 @@ public class Route_ContainerRepository {
         } catch (Sql2oException e) {
             System.err.println("Error al obtener el route_container por id");
             throw new RuntimeException("No se pudo obtener el route_container");
+        }
+    }
+
+    public List<Route_ContainerEntity> getRouteContainersByRouteId(Long routeId) {
+        String sql = "SELECT * FROM route_container WHERE route_id = :route_id";
+        try (Connection connection = sql2o.open()) {
+            // Ejecutar la consulta y devolver el resultado
+            return connection.createQuery(sql)
+                    .addParameter("route_id", routeId)
+                    .executeAndFetch(Route_ContainerEntity.class);  // Aquí retornamos el resultado
+        } catch (Sql2oException e) {
+            System.err.println("Error al obtener el route_container por id: " + e.getMessage());
+            throw new RuntimeException("No se pudo obtener el route_container", e);
         }
     }
 

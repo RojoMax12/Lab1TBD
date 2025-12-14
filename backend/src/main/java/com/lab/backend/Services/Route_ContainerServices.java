@@ -22,6 +22,10 @@ public class Route_ContainerServices {
         return routeContainerRepository.getAllRouteContainers();
     }
 
+    public List<Route_ContainerEntity> getRouteContainersByRoute(Long routeId) {
+        return routeContainerRepository.getRouteContainersByRouteId(routeId);
+    }
+
     // Obtener un Route_Container por su ID
     public Route_ContainerEntity getRouteContainerById(Long id) {
         return routeContainerRepository.getRouteContainerById(id);

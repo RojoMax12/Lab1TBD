@@ -43,7 +43,7 @@ public class RouteController {
     public RouteEntity findRouteById(@PathVariable Long id){
         return routeService.findRouteById(id);
     }
-    
+
     @PutMapping("/{id}")
     public void updateRoute(Long id, @RequestBody RouteEntity route){
         routeService.updateRoute(id, route);
