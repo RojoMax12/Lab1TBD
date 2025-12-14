@@ -186,7 +186,7 @@ import centralServices from '@/services/centralservices'
 import containerServices from '@/services/containerservices'
 import routeServices from '@/services/routeservices'
 import pickUpServices from '@/services/pickupservices'
-import routeContainerServices from '@/services/router_containerservices'
+import routeContainerServices from '@/services/route_containerservices'
 /* MODAL */
 const mostrarModal = ref(false)
 const contenedores = ref([])
