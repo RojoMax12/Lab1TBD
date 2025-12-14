@@ -119,24 +119,25 @@ async function getDriverData(email) {
   }
 }
 
-function getactualroute(driverId) {
+async function getactualroute(driverId) {
   try {
-    const response = RouteServices.findRouteByStatusAndIdDriver(driverId, 'EnProceso');
+    const response = await RouteServices.findRouteByStatusAndIdDriver(driverId, 'EnProceso');
     console.log("Response data:", response.data);
     
-    // Check if the route exists
-    if (response.data && response.data.length > 0) {
-      const route = response.data[0]; // Assuming only one route is returned
+    // Verificar si hay datos
+    if (response.data) {
+      const route = response.data; // Suponiendo que solo hay una ruta en proceso
 
-      // Update the route details in the UI
-      routeactual.value.date = route.date_;
-      routeactual.value.route_status = route.route_status;
-      routeactual.value.id_central = route.id_central;
-      routeactual.value.id_central_finish = route.id_central_finish;
-      routeactual.value.start_coords = `${route.coord_x_start}, ${route.coord_y_start}`;
-      routeactual.value.end_coords = `${route.coord_x_end}, ${route.coord_y_end}`;
-      routeactual.value.next_point = route.next_point || ''; // Assuming next_point might not be set
-      routeactual.value.waste_type = route.waste_type || ''; // Assuming waste_type might not be set
+      // Asegurarse de que las propiedades existen antes de asignarlas
+      routeactual.value.date = route.start_time || 'No disponible';  // O usar otro formato de fecha si es necesario
+      routeactual.value.route_status = route.route_status || 'No disponible';
+      routeactual.value.id_central = route.id_central || 'No disponible';
+      routeactual.value.id_central_finish = route.id_central_finish || 'No disponible';
+      routeactual.value.start_coords = route.start_time ? `${route.start_coords_x}, ${route.start_coords_y}` : 'No disponible';
+      routeactual.value.end_coords = route.end_time ? `${route.end_coords_x}, ${route.end_coords_y}` : 'No disponible';
+      routeactual.value.next_point = route.next_point || 'No disponible';
+      routeactual.value.waste_type = route.waste_type || 'No disponible';
+
     } else {
       console.error("No se encontró una ruta en proceso para este conductor.");
     }
@@ -144,6 +145,8 @@ function getactualroute(driverId) {
     console.error("Error al obtener la ruta en proceso:", error);
   }
 }
+
+
 
 
 function routeAssigned() {

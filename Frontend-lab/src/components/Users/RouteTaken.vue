@@ -19,15 +19,15 @@
           </thead>
 
           <tbody>
-              <tr v-for="route in routes.data" :key="route.id">
+              <tr v-for="route in routes.data" :key="route.id" >
                 <td>{{ route.id }}</td>
                 <td>{{ route.id_driver }}</td>
-                <td>{{ route.date_ }}</td>
-                <td>{{ route.start_time }}</td>
-                <td>{{ route.end_time }}</td>
-                <td>{{ route.route_status }}</td>
-                <td>{{ route.id_central }}</td>
-                <td>{{ route.id_pick_up_point }}</td>
+                <td>{{ route.date_ || 'Fecha no disponible' }}</td>
+                <td>{{ route.start_time || 'Hora no disponible' }}</td>
+                <td>{{ route.end_time || 'Hora no disponible' }}</td>
+                <td>{{ route.route_status || 'Estado no disponible' }}</td>
+                <td>{{ route.id_central || 'No disponible' }}</td>
+                <td>{{ route.id_central_finish || 'No disponible' }}</td>
               </tr>
             </tbody>
         </table>
@@ -51,12 +51,12 @@ const driver = ref(null); // Conductor obtenido desde la API
 // Obtener los datos del conductor logueado
 async function getDriverData(email) {
   try {
-    console.log("Obteniendo datos del conductor con email:", email);
+
     const response = await DriverServices.getDriverByEmail(email);
 
     // Si la respuesta es exitosa, asignar los datos al objeto `driver`
     driver.value = response.data;
-    console.log("Datos del conductor:", driver.value);
+
 
     // Ahora que tenemos los datos del conductor, obtenemos sus rutas asignadas
     if (driver.value) {
@@ -70,24 +70,32 @@ async function getDriverData(email) {
 // Obtener todas las rutas asignadas al conductor logueado
 const getallrouteassigned = (driver) => {
   if (!driver || !driver.id) return; // Asegurarnos de que el `driver` tenga un id
+
   routeServices.getAllRouterByDriverIdFinish(driver.id)
     .then((data) => {
-      routes.value = data; // Asignamos las rutas obtenidas al arreglo `routes`
-      console.log("Rutas obtenidas para el conductor:", driver.id, data);
+      console.log("Datos recibidos del servicio:", data);
+      routes.value = data || [];  // Asegurarse de que 'data' no sea undefined
+      console.log("Rutas obtenidas para el conductor:", driver.id, routes.value);
+
+      // Verifica si las rutas tienen los datos correctos antes de asignarlos
+      if (routes.value && routes.value.length > 0) {
+        routes.value.forEach(route => {
+          // Asegúrate de que los campos sean válidos
+          console.log("a", route);  // Verifica si la ruta tiene la propiedad 'date_'
+          route.date_ = route.date_ || 'Fecha no disponible';
+          route.start_time = route.start_time || 'Hora no disponible';
+          route.end_time = route.end_time || 'Hora no disponible';
+          route.id_central = route.id_central || 'No disponible';
+          route.id_central_finish = route.id_central_finish || 'No disponible';
+        });
+      }
     })
     .catch((error) => {
       console.error("Error al obtener las rutas:", error);
     });
 };
 
-// Función para tomar la ruta
-const takeRoute = (route) => {
-  if (route.route_status !== 'Tomada') {
-    route.route_status = 'Tomada';  // Cambiar el estado de la ruta a tomada
-    console.log(`Ruta tomada con ID: ${route.id}`);
-    alert(`Ruta con ID ${route.id} ha sido tomada.`);
-  }
-};
+
 
 onMounted(() => {
   const token = localStorage.getItem('jwt');  // Obtener el token del almacenamiento local
@@ -96,10 +104,7 @@ onMounted(() => {
 
   try {
     const decoded = jwtDecode(token);  // Decodificar el token JWT
-    console.log("Token decodificado:", decoded);
-
     userEmail.value = decoded.sub || decoded.email || null;
-
     if (userEmail.value) {
       getDriverData(userEmail.value);  // Llamar para obtener los datos del conductor
     }

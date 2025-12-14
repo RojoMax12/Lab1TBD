@@ -3,6 +3,7 @@ package com.lab.backend.Services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lab.backend.Entities.RouteEntity;
 import com.lab.backend.Repository.RouteRepository;
+import org.springframework.core.PriorityOrdered;
 import org.springframework.stereotype.Service;
 import org.springframework.util.RouteMatcher;
 
@@ -28,9 +29,11 @@ public class RouteServices {
     }
 
     public List<RouteEntity> getAllRoutesByIddriverFinish(Long iddriver) {
+        System.out.println( routeRepository.getAllRoutesByDriverFinish(iddriver));
         return routeRepository.getAllRoutesByDriverFinish(iddriver);
     }
     public RouteEntity getRouteByIdDriverAndStatus(Long id, String status) {
+        System.out.println(routeRepository.getRouteByIdDriverAndStatus(id, status));
         return routeRepository.getRouteByIdDriverAndStatus(id, status);
     }
 

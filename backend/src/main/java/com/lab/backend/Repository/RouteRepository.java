@@ -18,6 +18,8 @@ public class RouteRepository {
         this.sql2o = sql2o;
     }
 
+
+
     //CRUD
 
     public RouteEntity CreateRoute(RouteEntity routeEntity) {
@@ -55,11 +57,10 @@ public class RouteRepository {
                     .addParameter("id_driver", idDriver)
                     .addParameter("status", status)
                     .executeAndFetchFirst(RouteEntity.class);
-
             if (route == null) {
                 throw new RuntimeException("No se encontró ninguna ruta para el conductor con id: " + idDriver + " y estado: " + status);
             }
-
+            System.out.println(route.toString());
             return route;
         } catch (Sql2oException e){
             System.err.println("Error al consultar la ruta: ");

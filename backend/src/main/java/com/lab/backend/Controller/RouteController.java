@@ -46,6 +46,7 @@ public class RouteController {
 
     @GetMapping("/status/{iddriver}/{status}")
     public RouteEntity findRouteByStatusAndIdDriver(@PathVariable Long iddriver, @PathVariable String status){
+        System.out.println(routeService.getRouteByIdDriverAndStatus(iddriver, status));
         return routeService.getRouteByIdDriverAndStatus(iddriver, status);
     }
 

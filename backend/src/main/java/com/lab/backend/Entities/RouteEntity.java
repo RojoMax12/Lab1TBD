@@ -35,4 +35,27 @@ public class RouteEntity {
 
     public Long getId_central_finish() { return id_central_finish; }
     public void setId_central_finish(Long id_central_finish) { this.id_central_finish = id_central_finish; }
+
+
+    @Override
+    public String toString() {
+        return "RouteEntity{" +
+                "id=" + id +
+                ", id_driver=" + id_driver +
+                ", date_=" + date_ +
+                ", start_time=" + start_time +
+                ", end_time=" + end_time +
+                ", route_status='" + route_status + '\'' +
+                ", id_central=" + id_central +
+                ", id_central_finish=" + id_central_finish +
+                '}';
+    }
+
+    public Date getDate_() {
+        return date_;
+    }
+
+    public void setDate_(Date date_) {
+        this.date_ = date_;
+    }
 }
