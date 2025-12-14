@@ -9,7 +9,6 @@
     <!-- BOTONES SUPERIORES -->
     <div class="actions-top">
       <button class="btn-add" @click="abrirModalNuevo">Agregar contenedor</button>
-      <button class="btn-secondary">Recolección reciente</button>
       <button class="btn-mass-update" @click="abrirModalMasivo">Actualización masiva de pesos</button>
 
     </div>
@@ -112,9 +111,9 @@
   </div>
 
   <div class="container-wrapper2">
-    <h1 class  = "title">Contenedores sin recolección </h1>
+    <h1 class="title">Contenedores sin recolección reciente</h1>
 
-     <div class="grid-header">
+    <div class="grid-header-norec">
       <div>ID</div>
       <div>Coord X</div>
       <div>Coord Y</div>
@@ -122,11 +121,11 @@
       <div>Tipo de residuo</div>
     </div>
 
-    <div class = "scrollable-table">
+    <div class="scrollable-table">
       <div
         v-for="contenedorsinrecolectar in contenedoressinrecolectar"
         :key="contenedorsinrecolectar.id"
-        class="grid-row"
+        class="grid-row-norec"
       >
         <div>{{ contenedorsinrecolectar.id_contenedor }}</div>
         <div>{{ contenedorsinrecolectar.coord_x }}</div>
@@ -136,6 +135,7 @@
       </div>
     </div>
   </div>
+
 
   <div class="container-wrapper3">
     <h1 class="title">Contenedores con problemas</h1>
@@ -231,12 +231,13 @@ export default {
     const obtenerContenedores = () => {
       containerServices.getAllContainers()
         .then(response => {
-          contenedores.value = response.data
+          contenedores.value = response.data.sort((a, b) => a.id - b.id);
         })
         .catch(error => {
-          console.error("Error al obtener contenedores:", error)
-        })
-    }
+          console.error("Error al obtener contenedores:", error);
+        });
+    };
+
 
     const obtenerContenedoresConProblemas = () => {
       containerServices.ContainerWithProblems()
@@ -258,21 +259,21 @@ export default {
         })
     }
 
-    const obtenerAnalisisDensidad = () => {
-      containerServices.DensityAnalysisContainer()
-        .then(response => {
-          analisisdensidad.value = response.data
-        })
-        .catch(error => {
-          console.error("Error al realizar el Análisis de densidad", error)
-        })
-    }
+      const obtenerAnalisisDensidad = () => {
+        containerServices.DensityAnalysisContainer()
+          .then(response => {
+            analisisdensidad.value = response.data
+          })
+          .catch(error => {
+            console.error("Error al realizar el Análisis de densidad", error)
+          })
+      }
 
-  const cargarContenedoresDeRuta = async (routeId) => {
-    if (!routeId) {
-      contenedoresDeRuta.value = []
-      return
-    }
+    const cargarContenedoresDeRuta = async (routeId) => {
+      if (!routeId) {
+        contenedoresDeRuta.value = []
+        return
+      }
 
     try {
       const res = await routeContainerServices.getRouteContainersByRoute(routeId)
@@ -444,6 +445,8 @@ export default {
     }
   }
 }
+
+
 </script>
 
 
@@ -499,7 +502,7 @@ export default {
   margin-bottom: 20px;
 }
 
-.btn-add, .btn-secondary {
+.btn-add {
   padding: 10px 18px;
   background: #4a4f37;
   color: white;
@@ -509,7 +512,7 @@ export default {
   font-weight: 500;
 }
 
-.btn-secondary:hover, .btn-add:hover {
+.btn-add:hover {
   background: #3c4030;
 }
 
@@ -533,6 +536,34 @@ export default {
   background: white;
   border-bottom: 1px solid #000000;
   color: #000000;
+}
+
+/* === Tabla: Contenedores sin recolección === */
+.grid-header-norec,
+.grid-row-norec {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 columnas iguales */
+  padding: 12px;
+  text-align: center;
+  align-items: center;
+  width: 100%;
+}
+
+.grid-header-norec {
+  background: #52563f;
+  color: white;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.grid-row-norec {
+  background: white;
+  border-bottom: 1px solid #000000;
+  color: #000000;
+}
+
+.grid-row-norec div {
+  padding: 8px 0;
 }
 
 /* Encabezado y filas: contenedores problemáticos */
