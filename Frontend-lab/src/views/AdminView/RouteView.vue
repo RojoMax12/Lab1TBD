@@ -129,9 +129,52 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <!-- ============================
+        TABLA DE RUTAS INEFICIENTES
+  ============================ -->
+  <div class="inefficient-card">
+    <h2 class="subtitle">Rutas Ineficientes</h2>
+
+    <button class="btn-plan" @click="fetchRutasIneficientes">
+      Mostrar Rutas Ineficientes
+    </button>
+
+    <div class="inefficient-box">
+  <table class="inefficient-table">
+    <thead>
+      <tr>
+        <th>ID Ruta</th>
+        <th>Contenedores</th>
+        <th>Duración (horas)</th>
+      </tr>
+    </thead>
+
+    <!-- Si hay datos -->
+    <tbody v-if="rutasIneficientes.length" class="Data-text">
+      <tr v-for="r in rutasIneficientes" :key="r.route_id">
+        <td>{{ r.route_id }}</td>
+        <td>{{ r.container_count }}</td>
+        <td>{{ r.duration_hours }}</td>
+      </tr>
+    </tbody>
+
+    <!-- Si NO hay datos -->
+    <tbody v-else>
+      <tr>
+        <td colspan="3" class="no-data">No hay rutas ineficientes cargadas aún.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
   </div>
+
+
 </template>
+
+
 
 <script setup>
 import { ref } from 'vue'
@@ -149,8 +192,12 @@ const contenedores = ref([])
 const drivers = ref([])
 const centrales = ref([])
 const puntosRetiro = ref([])
+
 /* RUTAS PLANIFICADAS */
 const rutas = ref([])
+
+/* RUTAS INEFICIENTES */
+const rutasIneficientes = ref([])
 
 /* FORMULARIO */
 const nuevaRuta = ref({
@@ -276,6 +323,16 @@ async function fetchPuntosRetiro() {
   }
 }
 
+async function fetchRutasIneficientes() {
+  try {
+    const res = await routeServices.inefficientRoutes()
+    rutasIneficientes.value = Array.isArray(res.data) ? res.data : []
+  } catch (e) {
+    console.error('Error fetching inefficient routes:', e)
+    alert('Error al obtener rutas ineficientes')
+  }
+}
+
 onMounted(() => {
   fetchRutas()
   fetchDrivers()
@@ -288,14 +345,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* --- igual que antes, no recorto --- */
+/* === TARJETA PRINCIPAL: RUTAS PLANIFICADAS === */
 .container-routes {
-  background: #f9f9f9;
-  padding: 25px;
+  background: #ffffff;
+  padding: 25px 30px 40px;
   border-radius: 12px;
   width: 1000px;
   margin: 40px auto;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .title, .subtitle {
@@ -309,40 +367,58 @@ onMounted(() => {
   font-size: 22px;
 }
 
-.actions-top {
-  display: flex;
-  justify-content: flex-end;
-}
-
+/* === BOTÓN GENERAL === */
 .btn-plan {
-  background: #4a4f37;
-  color: #fff;
-  padding: 10px 40px;
-  border-radius: 8px;
+  background-color: #5f6949;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
   border: none;
-  font-size: 15px;
+  cursor: pointer;
+  font-size: 1rem;
+  position: absolute;
+  right: 40px;
+  top: 25px;
+  transition: background-color 0.2s ease;
 }
 
+.btn-plan:hover {
+  background-color: #4c553a;
+}
+
+/* === MODAL === */
+/* --- MODAL --- */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2000; /* sobre todo */
 }
 
 .modal {
+  position: relative;
+  z-index: 2001; /* sobre el overlay */
   background: white;
-  padding: 20px ;
+  padding: 20px;
   border-radius: 10px;
   width: 420px;
   color: #333;
-  /* make modal vertically scrollable when content is tall */
   max-height: 80vh;
   overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
+
+/* --- TARJETAS GENERALES --- */
+.container-routes,
+.inefficient-card {
+  position: relative;   /* aseguran su posición dentro del flujo */
+  overflow: visible;    /* evita que el modal quede oculto */
+}
+
 
 .label {
   margin-top: 10px;
@@ -357,12 +433,13 @@ onMounted(() => {
   border: 1px solid #ccc;
 }
 
+/* === LISTA DE CONTENEDORES === */
 .checkbox-list {
   background: #f7f7f7;
   border-radius: 8px;
   border: 1px solid #ddd;
   padding: 8px;
-  max-height: 240px; /* allow more room but still scroll */
+  max-height: 240px;
   overflow-y: auto;
   margin-top: 10px;
 }
@@ -373,6 +450,7 @@ onMounted(() => {
   margin-bottom: 6px;
 }
 
+/* === BOTONES DEL MODAL === */
 .modal-buttons {
   display: flex;
   justify-content: space-between;
@@ -395,35 +473,67 @@ onMounted(() => {
   border-radius: 6px;
 }
 
-.route-table {
+/* === TABLA GENERAL (Planificadas e Ineficientes) === */
+.horizontal-scroll,
+.inefficient-box {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+  overflow-y: auto;
+  max-height: 400px;
+  padding: 10px;
+}
+
+.route-table,
+.inefficient-table {
   width: 100%;
-  margin-top: 20px;
   border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.route-table th {
-  background: #52563f;
-  color: white;
-  padding: 12px;
+/* === ENCABEZADOS === */
+.route-table thead th,
+.inefficient-table thead th {
+  position: sticky;
+  top: 0;
+  background: #5f6949;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 14px;
+  text-align: center;
+  border-bottom: 2px solid #4a4f37;
+  z-index: 2;
 }
 
-.route-table td {
-  background: #f7f7f7;
+.route-table thead tr:first-child th:first-child,
+.inefficient-table thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+.route-table thead tr:first-child th:last-child,
+.inefficient-table thead tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* === CELDAS === */
+.route-table td,
+.inefficient-table td {
+  background: #f9f9f9;
+  color: #333;
   padding: 12px;
   border-bottom: 1px solid #ddd;
-}
-
-.horizontal-scroll {
-  overflow-x: auto;
-  max-height: 600px;
-}
-
-
-.Data-text {
-  color: #4a4f37;
   text-align: center;
 }
 
+/* === HOVER === */
+.route-table tbody tr:hover,
+.inefficient-table tbody tr:hover {
+  background: #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+/* === BOTÓN ELIMINAR === */
 .btn-delete {
   background: #d9534f;
   color: #fff;
@@ -436,4 +546,36 @@ onMounted(() => {
 .btn-delete:hover {
   opacity: 0.9;
 }
+
+/* === TARJETA RUTAS INEFICIENTES === */
+.inefficient-card {
+  background: #ffffff;
+  padding: 25px 30px 40px;
+  border-radius: 12px;
+  width: 1000px;
+  margin: 40px auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.inefficient-card .subtitle {
+  text-align: center;
+  color: #4a4f37;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* === MENSAJE SIN DATOS === */
+.no-data {
+  text-align: center;
+  color: #4a4f37;
+  background: #fff;
+  padding: 14px;
+  font-style: italic;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+
 </style>

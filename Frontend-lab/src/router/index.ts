@@ -14,6 +14,7 @@ import CentralView from '@/views/AdminView/CentralView.vue'
 import ServicesView from '../views/ServicesView.vue'
 import ContactView from '../views/ContactView.vue'
 import WhoWeAreView from '@/views/WhoWeAreView.vue'
+ 
 
 
 const router = createRouter({
