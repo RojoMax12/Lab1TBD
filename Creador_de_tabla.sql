@@ -205,7 +205,7 @@ INSERT INTO route_container (id_route, id_container) VALUES
 (3, 7),  -- Ruta 3, Contenedor 7
 (3, 8),  -- Ruta 3, Contenedor 8
 (3, 9),  -- Ruta 3, Contenedor 9
-(4, 10), -- Ruta 4, Contenedor 10
+(4, 10); -- Ruta 4, Contenedor 10
 
 -- =========================================================
 -- Procedimiento almacenado: actualizar_peso_contenedores
