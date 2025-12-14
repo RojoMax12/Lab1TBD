@@ -50,6 +50,6 @@ export default {
     },
 
     updateRouteStatus(routeId, status) {
-        return api.put(`/api/route/${routeId}/${status}`);
+        return api.put(`/api/route/status/${routeId}/${status}`);
     }
 }
