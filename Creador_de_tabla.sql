@@ -51,7 +51,6 @@ CREATE TABLE route (
                        end_time TIME,
                        route_status VARCHAR(50) NOT NULL,
                        id_central BIGINT REFERENCES central(id) ON DELETE SET NULL,
-                       id_pick_up_point BIGINT REFERENCES pickuppoint(id) ON DELETE SET NULL
 );
 
 CREATE TABLE pickup (
