@@ -102,7 +102,7 @@ function logout() {
   const authStore = useAuthStore()
   authStore.setToken(null)
   localStorage.removeItem('jwt')
-  router.push({ name: 'home' })
+  router.push('/')
 }
 
 function home() {

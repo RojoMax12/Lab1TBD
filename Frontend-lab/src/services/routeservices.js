@@ -47,6 +47,9 @@ export default {
 
     updateRoute(routeId, routeData) {
         return api.put(`/api/route/${routeId}`, routeData);
-    }
+    },
 
-};
+    updateRouteStatus(routeId, status) {
+        return api.put(`/api/route/${routeId}/${status}`);
+    }
+}

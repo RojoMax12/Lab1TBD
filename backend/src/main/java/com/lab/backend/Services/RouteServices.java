@@ -39,6 +39,8 @@ public class RouteServices {
         routeRepository.updateRoute(id, routeEntity);
     }
 
+    public void updateRouteStatus(Long id, String status) {routeRepository.updateRouteStatus(id, status);}
+
     public void deleteRoute(Long id) {
         routeRepository.deleteRoute(id);
     }

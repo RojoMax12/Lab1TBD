@@ -17,7 +17,7 @@
                 <th>Hora Fin</th>
                 <th>Estado Ruta</th>
                 <th>ID Central</th>
-                <th>ID Punto de Retiro</th>
+                <th>ID Central de termino</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -31,7 +31,7 @@
                 <td>{{ route.end_time }}</td>
                 <td>{{ route.route_status }}</td>
                 <td>{{ route.id_central }}</td>
-                <td>{{ route.id_pick_up_point }}</td>
+                <td>{{ route.id_central_finish}}</td>
                 <td class="row-actions">
                   <button
                     class="btn-take"
@@ -87,21 +87,33 @@ const getallrouteassigned = (driver) => {
   routeServices.getAllRouterBydriverIdPending(driver.id)
     .then((data) => {
       routes.value = data; // Asignamos las rutas obtenidas al arreglo `routes`
-      console.log("Rutas obtenidas para el conductor:", driver.id, data);
+      console.log("Rutas obtenidas para el conductor:", driver.id, routes);
     })
     .catch((error) => {
       console.error("Error al obtener las rutas:", error);
     });
 };
 
-// Función para tomar la ruta
 const takeRoute = (route) => {
   if (route.route_status !== 'Tomada') {
-    route.route_status = 'Tomada';  // Cambiar el estado de la ruta a tomada
-    console.log(`Ruta tomada con ID: ${route.id}`);
-    alert(`Ruta con ID ${route.id} ha sido tomada.`);
+    // Cambiar el estado de la ruta a 'En Proceso'
+    route.route_status = 'En Proceso';  // Cambiar el estado a 'En Proceso'
+    route.id_driver = driver.value.id;  // Asignar el id del conductor a la ruta
+    
+    console.log(`Ruta con ID ${route.id} tomada por el conductor con ID ${driver.value.id}`);
+    
+    // Hacer la llamada a la API para actualizar la ruta
+    routeServices.updateRouteStatus(route.id, "EnProceso")
+      .then(() => {
+        alert(`Ruta con ID ${route.id} ha sido tomada y está en proceso.`);
+      })
+      .catch((error) => {
+        console.error("Error al actualizar la ruta:", error);
+        alert("Hubo un error al asignar la ruta.");
+      });
   }
 };
+
 
 onMounted(() => {
   const token = localStorage.getItem('jwt');  // Obtener el token del almacenamiento local

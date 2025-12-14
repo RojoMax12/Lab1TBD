@@ -49,6 +49,11 @@ public class RouteController {
         routeService.updateRoute(id, route);
     }
 
+    @PutMapping("/status/{id}/{status}")
+    public void updateRouteStatus(@PathVariable Long id, @PathVariable String status){
+        routeService.updateRouteStatus(id, status);
+    }
+
     @DeleteMapping("/{id}")
     public void deleteRoute(@PathVariable Long id){
         routeService.deleteRoute(id);

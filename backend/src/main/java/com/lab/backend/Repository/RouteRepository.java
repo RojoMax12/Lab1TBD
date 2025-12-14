@@ -103,6 +103,21 @@ public class RouteRepository {
         }
     }
 
+    public void updateRouteStatus(Long id, String status) {
+        String sql = "UPDATE route SET route_status = :route_status WHERE id = :id";
+        try (Connection conn = sql2o.open()) {
+            conn.createQuery(sql)
+                    .addParameter("route_status", status)
+                    .addParameter("id", id)
+                    .executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Error al actualizar la ruta: " + e.getMessage());
+            throw new RuntimeException("No se pudo actualizar la ruta", e);
+        }
+    }
+
+
+
     public void deleteRoute(Long id) {
         String sql = "DELETE FROM route WHERE id = :id";
         try (Connection conn = sql2o.open()) {
