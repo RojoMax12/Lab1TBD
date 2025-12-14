@@ -37,12 +37,11 @@ CREATE TABLE admin (
                         role VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE pickuppoint (
-                             id BIGSERIAL PRIMARY KEY,
-                             name VARCHAR(100) NOT NULL,
-                             coord_x REAL NOT NULL,
-                             coord_y REAL NOT NULL
-);
+CREATE TABLE route_container (
+                               id BIGSERIAL PRIMARY KEY,
+                               id_route BIGINT REFERENCES route(id) ON DELETE CASCADE,
+                               id_container BIGINT REFERENCES container(id) ON DELETE CASCADE
+); 
 
 CREATE TABLE route (
                        id BIGSERIAL PRIMARY KEY,
