@@ -194,6 +194,19 @@ INSERT INTO pickup (id_container, id_route, date_hour) VALUES
                                                            (2,20,'2025-10-20 07:30:00'),
                                                            (3,20,'2025-10-20 09:00:00');
 
+
+INSERT INTO route_container (id_route, id_container) VALUES
+(1, 1),  -- Ruta 1, Contenedor 1
+(1, 2),  -- Ruta 1, Contenedor 2
+(1, 3),  -- Ruta 1, Contenedor 3
+(2, 4),  -- Ruta 2, Contenedor 4
+(2, 5),  -- Ruta 2, Contenedor 5
+(2, 6),  -- Ruta 2, Contenedor 6
+(3, 7),  -- Ruta 3, Contenedor 7
+(3, 8),  -- Ruta 3, Contenedor 8
+(3, 9),  -- Ruta 3, Contenedor 9
+(4, 10), -- Ruta 4, Contenedor 10
+
 -- =========================================================
 -- Procedimiento almacenado: actualizar_peso_contenedores
 -- =========================================================
@@ -229,7 +242,7 @@ CREATE OR REPLACE PROCEDURE planificar_ruta(
     p_contenedores JSON,
     p_id_driver BIGINT,
     p_id_central BIGINT,
-    p_id_central_finish BIGINT  -- Nuevo parámetro para la central de finalización
+    p_id_central_finish BIGINT  -- Parámetro para la central de finalización
 )
 LANGUAGE plpgsql
 AS $$
@@ -240,18 +253,18 @@ DECLARE
     new_route_id BIGINT;
 BEGIN
     -- Validar existencia y disponibilidad de los contenedores
-    FOR rec IN SELECT * FROM json_array_elements(p_contenedores) AS contenedor(id)
+    FOR rec IN SELECT * FROM json_array_elements_text(p_contenedores) AS contenedor(id)
     LOOP
-        -- Verificar que el contenedor existe y no está asignado a una ruta pendiente
+        -- Convertir rec.id a BIGINT y verificar que el contenedor existe y no está asignado a una ruta pendiente
         SELECT COUNT(*) INTO v_contenedor_id
         FROM container
-        WHERE id = rec.id
+        WHERE id = rec.id::BIGINT
         AND NOT EXISTS (
             SELECT 1
             FROM route_container rc
             JOIN route r ON r.id = rc.route_id
             WHERE r.route_status = 'Pendiente'
-            AND rc.container_id = rec.id
+            AND rc.container_id = rec.id::BIGINT
         );
 
         -- Si el contenedor no existe o está asignado a una ruta pendiente
@@ -265,19 +278,25 @@ BEGIN
         RAISE EXCEPTION 'Error: uno o más contenedores no existen o están asignados a una ruta pendiente';
     END IF;
 
-    -- Crear la nueva ruta (Ahora incluyendo `id_central_finish`)
+    -- Crear la nueva ruta
     INSERT INTO route (id_driver, date_, route_status, id_central, id_central_finish)
     VALUES (p_id_driver, NOW(), 'Pendiente', p_id_central, p_id_central_finish)
     RETURNING id INTO new_route_id;
 
     -- Asociar los contenedores con la nueva ruta usando la tabla `route_container`
-    FOR rec IN SELECT * FROM json_array_elements(p_contenedores) AS contenedor(id)
+    FOR rec IN 
+        SELECT * FROM json_array_elements_text(p_contenedores) AS contenedor(id)
     LOOP
+        -- Insertar la relación contenedor-ruta en la tabla `route_container`
         INSERT INTO route_container (container_id, route_id)
-        VALUES (rec.id, new_route_id);
+        VALUES (rec.id::BIGINT, new_route_id);
     END LOOP;
+
+    -- Confirmación del éxito
+    RAISE NOTICE 'Ruta planificada con ID % y % contenedores asignados', new_route_id, array_length(p_contenedores, 1);
 END;
 $$;
+
 
 
 -- =========================================================

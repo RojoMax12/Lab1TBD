@@ -21,7 +21,7 @@ public class RouteController {
         public List<Long> contenedores;
         public Long idDriver;
         public Long idCentral;
-        public Long idPickUpPoint;
+        public Long idCentralFinish;
     }
 
     @GetMapping("/")
@@ -43,10 +43,7 @@ public class RouteController {
     public RouteEntity findRouteById(@PathVariable Long id){
         return routeService.findRouteById(id);
     }
-
-
-
-
+    
     @PutMapping("/{id}")
     public void updateRoute(Long id, @RequestBody RouteEntity route){
         routeService.updateRoute(id, route);
@@ -64,7 +61,7 @@ public class RouteController {
                     request.contenedores,
                     request.idDriver,
                     request.idCentral,
-                    request.idPickUpPoint
+                    request.idCentralFinish
             );
             return "Ruta planificada exitosamente";
         } catch (Exception e) {
