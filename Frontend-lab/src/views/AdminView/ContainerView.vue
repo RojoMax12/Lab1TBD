@@ -112,7 +112,7 @@
   </div>
 
   <div class="container-wrapper2">
-    <h1 class  = "title">Contenedores sin recolección</h1>
+    <h1 class  = "title">Contenedores sin recolección </h1>
 
      <div class="grid-header">
       <div>ID</div>
@@ -137,28 +137,25 @@
     </div>
   </div>
 
-  <div class = "container-wrapper3">
-    <h1 class  = "title">Contenedores  con problemas</h1>
+  <div class="container-wrapper3">
+    <h1 class="title">Contenedores con problemas</h1>
 
-      <div class="grid-header">
-        <div>ID</div>
-        <div>Coord X</div>
-        <div>Coord Y</div>
-        <div>Estado</div>
-        <div>Tipo de residuo</div>
+    <div class="grid-header-problematic">
+      <div>ID Contenedor</div>
+      <div>
+        Conductores distintos
+        <span class="subheader">(último año)</span>
       </div>
+    </div>
 
-    <div class = "scrollable-table">
+    <div class="scrollable-table">
       <div
-        v-for="contenedorproblema in contenedoresconproblemas"
-        :key="contenedorproblema.id"
-        class="grid-row"
+        v-for="contenedor in contenedoresconproblemas"
+        :key="contenedor.id_container"
+        class="grid-row-problematic"
       >
-        <div>{{ contenedorproblema.id_contenedor }}</div>
-        <div>{{ contenedorproblema.coord_x }}</div>
-        <div>{{ contenedorproblema.coord_y }}</div>
-        <div>{{ contenedorproblema.status }}</div>
-        <div>{{ contenedorproblema.tipo_residuo }}</div>
+        <div>{{ contenedor.id_container }}</div>
+        <div>{{ contenedor.drivercount }}</div>
       </div>
     </div>
   </div>
@@ -382,7 +379,6 @@ export default {
     }
 
     const abrirModalMasivo = () => {
-      console.log('>>> Modal masivo abierto'); // ← prueba
       mostrarModalMasivo.value = true
     }
 
@@ -538,6 +534,37 @@ export default {
   border-bottom: 1px solid #000000;
   color: #000000;
 }
+
+/* Encabezado y filas: contenedores problemáticos */
+.grid-header-problematic, .grid-row-problematic {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+  padding: 12px;
+  text-align: center;
+  align-items: center;
+}
+
+.grid-header-problematic {
+  background: #52563f;
+  color: white;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.grid-row-problematic {
+  background: white;
+  border-bottom: 1px solid #000000;
+  color: #000000;
+}
+
+.subheader {
+  font-size: 13px;
+  font-weight: normal;
+  display: block;
+  color: #dcdcdc;
+}
+
+
 
 /*Tabla 3 columnas*/
 .grid-header-density, .grid-row-density {
