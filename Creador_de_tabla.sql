@@ -245,15 +245,20 @@ CREATE OR REPLACE PROCEDURE planificar_ruta(
     p_id_central_finish BIGINT  -- Parámetro para la central de finalización
 )
 LANGUAGE plpgsql
-AS $$
+AS $$ 
 DECLARE
     v_contenedor_id BIGINT;
     v_error BOOLEAN := FALSE;
     rec RECORD;
     new_route_id BIGINT;
+    contenedores_jsonb JSONB := p_contenedores::JSONB;  -- Convertir JSON a JSONB
+    contenedor_count INT;  -- Variable para contar los contenedores
 BEGIN
+    -- Contar los elementos en el JSONB
+    contenedor_count := jsonb_array_length(contenedores_jsonb);
+
     -- Validar existencia y disponibilidad de los contenedores
-    FOR rec IN SELECT * FROM json_array_elements_text(p_contenedores) AS contenedor(id)
+    FOR rec IN SELECT * FROM jsonb_array_elements_text(contenedores_jsonb) AS contenedor(id)
     LOOP
         -- Convertir rec.id a BIGINT y verificar que el contenedor existe y no está asignado a una ruta pendiente
         SELECT COUNT(*) INTO v_contenedor_id
@@ -262,9 +267,9 @@ BEGIN
         AND NOT EXISTS (
             SELECT 1
             FROM route_container rc
-            JOIN route r ON r.id = rc.route_id
+            JOIN route r ON r.id = rc.id_route
             WHERE r.route_status = 'Pendiente'
-            AND rc.container_id = rec.id::BIGINT
+            AND rc.id_container = rec.id::BIGINT
         );
 
         -- Si el contenedor no existe o está asignado a una ruta pendiente
@@ -284,18 +289,23 @@ BEGIN
     RETURNING id INTO new_route_id;
 
     -- Asociar los contenedores con la nueva ruta usando la tabla `route_container`
-    FOR rec IN 
-        SELECT * FROM json_array_elements_text(p_contenedores) AS contenedor(id)
+    FOR rec IN SELECT * FROM jsonb_array_elements_text(contenedores_jsonb) AS contenedor(id)
     LOOP
         -- Insertar la relación contenedor-ruta en la tabla `route_container`
-        INSERT INTO route_container (container_id, route_id)
+        INSERT INTO route_container (id_container, id_route)
         VALUES (rec.id::BIGINT, new_route_id);
+
+        -- Actualizar el estado del contenedor a "Ocupado"
+        UPDATE container
+        SET status = 'Ocupado'
+        WHERE id = rec.id::BIGINT;
     END LOOP;
 
     -- Confirmación del éxito
-    RAISE NOTICE 'Ruta planificada con ID % y % contenedores asignados', new_route_id, array_length(p_contenedores, 1);
+    RAISE NOTICE 'Ruta planificada con ID % y % contenedores asignados', new_route_id, contenedor_count;
 END;
 $$;
+
 
 
 
