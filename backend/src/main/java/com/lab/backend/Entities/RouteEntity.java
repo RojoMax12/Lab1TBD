@@ -12,7 +12,7 @@ public class RouteEntity {
     private LocalTime end_time;
     private String route_status;
     private Long id_central;
-    private Long id_pick_up_point;
+    private Long id_central_finish;
 
     public Long getId() {
         return id;
@@ -104,11 +104,11 @@ public class RouteEntity {
         this.id_central = id_central;
     }
 
-    public Long getId_pick_up_point() {
-        return id_pick_up_point;
+    public Long getId_central_finish() {
+        return id_central_finish;
     }
 
-    public void setId_pick_up_point(Long id_pick_up_point) {
-        this.id_pick_up_point = id_pick_up_point;
+    public void setId_central_finish(Long id_central_finish) {
+        this.id_central_finish = id_central_finish;
     }
 }

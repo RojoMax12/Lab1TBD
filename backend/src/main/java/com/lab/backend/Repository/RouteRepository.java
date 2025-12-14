@@ -88,8 +88,6 @@ public class RouteRepository {
         }
     }
 
-
-
     public void updateRoute(Long id, RouteEntity routeEntity) {
         String sql = "UPDATE route SET id_driver = :id_driver, date_ = :date_, start_time = :start_time, " +
                 "end_time = :end_time, route_status = :route_status, id_central = :id_central, " +
@@ -118,20 +116,21 @@ public class RouteRepository {
     }
 
 
-    public void planificarRuta(String contenedoresJson, Long idDriver, Long idCentral, Long idPickUpPoint) {
-        String sql = "CALL planificar_ruta(:contenedores::json, :idDriver, :idCentral, :idPickUpPoint)";
+    public void planificarRuta(String contenedoresJson, Long idDriver, Long idCentral, Long idCentralFinish) {
+        String sql = "CALL planificar_ruta(:contenedores::json, :idDriver, :idCentral, :idCentralFinish)";
         try (Connection conn = sql2o.open()) {
             conn.createQuery(sql)
                     .addParameter("contenedores", contenedoresJson)
                     .addParameter("idDriver", idDriver)
-                    .addParameter("idPickUpPoint", idPickUpPoint)
                     .addParameter("idCentral", idCentral)
+                    .addParameter("idCentralFinish", idCentralFinish)  // Pasando el parámetro de la central de finalización
                     .executeUpdate();
         } catch (Exception e) {
             System.err.println("Error al ejecutar planificar_ruta: " + e.getMessage());
             throw new RuntimeException("Error al planificar ruta", e);
         }
     }
+
 
     // Sentencia 1: Calcula la eficiencia promedio de cada conductor,
     // medida como el tiempo medio (en horas) que tarda en completar sus rutas finalizadas

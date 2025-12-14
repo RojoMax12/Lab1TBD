@@ -232,49 +232,56 @@ CREATE OR REPLACE PROCEDURE planificar_ruta(
     p_contenedores JSON,
     p_id_driver BIGINT,
     p_id_central BIGINT,
-    p_id_pick_up_point BIGINT
+    p_id_central_finish BIGINT  -- Nuevo parámetro para la central de finalización
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-v_contenedor_id BIGINT;
+    v_contenedor_id BIGINT;
     v_error BOOLEAN := FALSE;
     rec RECORD;
     new_route_id BIGINT;
 BEGIN
-    -- Validar existencia y disponibilidad
-FOR rec IN SELECT json_array_elements_text(p_contenedores)::BIGINT AS id LOOP
-SELECT COUNT(*) INTO STRICT v_contenedor_id
-FROM container
-WHERE id = rec.id
-  AND id NOT IN (
-    SELECT id_container
-    FROM pickup p
-    JOIN route r ON r.id = p.id_route
-    WHERE r.route_status = 'Pendiente'
-    );
+    -- Validar existencia y disponibilidad de los contenedores
+    FOR rec IN SELECT * FROM json_array_elements(p_contenedores) AS contenedor(id)
+    LOOP
+        -- Verificar que el contenedor existe y no está asignado a una ruta pendiente
+        SELECT COUNT(*) INTO v_contenedor_id
+        FROM container
+        WHERE id = rec.id
+        AND NOT EXISTS (
+            SELECT 1
+            FROM route_container rc
+            JOIN route r ON r.id = rc.route_id
+            WHERE r.route_status = 'Pendiente'
+            AND rc.container_id = rec.id
+        );
 
-IF v_contenedor_id = 0 THEN
+        -- Si el contenedor no existe o está asignado a una ruta pendiente
+        IF v_contenedor_id = 0 THEN
             v_error := TRUE;
-END IF;
-END LOOP;
+        END IF;
+    END LOOP;
 
+    -- Si hay un error, lanzar una excepción
     IF v_error THEN
         RAISE EXCEPTION 'Error: uno o más contenedores no existen o están asignados a una ruta pendiente';
-END IF;
+    END IF;
 
-    -- Crear la nueva ruta
-INSERT INTO route (id_driver, date_, route_status, id_central, id_pick_up_point)
-VALUES (p_id_driver, NOW(), 'Pendiente', p_id_central, p_id_pick_up_point)
+    -- Crear la nueva ruta (Ahora incluyendo `id_central_finish`)
+    INSERT INTO route (id_driver, date_, route_status, id_central, id_central_finish)
+    VALUES (p_id_driver, NOW(), 'Pendiente', p_id_central, p_id_central_finish)
     RETURNING id INTO new_route_id;
 
--- Asociar los contenedores
-FOR rec IN SELECT json_array_elements_text(p_contenedores)::BIGINT AS id LOOP
-               INSERT INTO pickup (id_container, id_route, date_hour)
-           VALUES (rec.id, new_route_id, NOW());
-END LOOP;
+    -- Asociar los contenedores con la nueva ruta usando la tabla `route_container`
+    FOR rec IN SELECT * FROM json_array_elements(p_contenedores) AS contenedor(id)
+    LOOP
+        INSERT INTO route_container (container_id, route_id)
+        VALUES (rec.id, new_route_id);
+    END LOOP;
 END;
 $$;
+
 
 -- =========================================================
 -- Ejemplo de uso del procedimiento
