@@ -37,12 +37,6 @@ CREATE TABLE admin (
                         role VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE route_container (
-                               id BIGSERIAL PRIMARY KEY,
-                               id_route BIGINT REFERENCES route(id) ON DELETE CASCADE,
-                               id_container BIGINT REFERENCES container(id) ON DELETE CASCADE
-); 
-
 CREATE TABLE route (
                        id BIGSERIAL PRIMARY KEY,
                        id_driver BIGINT REFERENCES driver(id) ON DELETE SET NULL,
@@ -51,6 +45,13 @@ CREATE TABLE route (
                        end_time TIME,
                        route_status VARCHAR(50) NOT NULL,
                        id_central BIGINT REFERENCES central(id) ON DELETE SET NULL,
+                       id_central_finish BIGINT REFERENCES central(id) ON DELETE SET NULL
+);
+
+CREATE TABLE route_container (
+                               id BIGSERIAL PRIMARY KEY,
+                               id_route BIGINT REFERENCES route(id) ON DELETE CASCADE,
+                               id_container BIGINT REFERENCES container(id) ON DELETE CASCADE
 );
 
 CREATE TABLE pickup (
@@ -97,13 +98,9 @@ INSERT INTO driver (name, last_name, email, password, role) VALUES
 INSERT INTO admin (name, last_name, email, password, role) VALUES
                                                         ('Carlos', 'López', 'carlos.lopez@mail.com', 'pass123', 'admin');
 
--- Puntos de recolección
-INSERT INTO pickuppoint (name, coord_x, coord_y) VALUES
-                                                     ('Punto A', 18.1, 33.3),
-                                                     ('Punto B', 20.5, 35.7);
 
 -- Rutas
-INSERT INTO route (id_driver, date_, start_time, end_time, route_status, id_central, id_pick_up_point) VALUES
+INSERT INTO route (id_driver, date_, start_time, end_time, route_status, id_central, id_central_finish) VALUES
                                                                                                            (1, '2025-10-20', '07:00:00', '09:30:00', 'Finalizada', 1, 1),   -- 2.5h
                                                                                                            (1, '2025-10-20', '08:00:00', '10:00:00', 'Finalizada', 1, 2),   -- 2h
                                                                                                            (2, '2025-10-20', '09:00:00', '11:00:00', 'Finalizada', 2, 1),   -- 2h
