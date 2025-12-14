@@ -7,6 +7,8 @@ import org.springframework.core.PriorityOrdered;
 import org.springframework.stereotype.Service;
 import org.springframework.util.RouteMatcher;
 
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -51,10 +53,10 @@ public class RouteServices {
         routeRepository.deleteRoute(id);
     }
 
-    public void planificarRuta(List<Long> contenedorIds, Long idDriver, Long idCentral, Long idPickUpPoint) {
+    public void planificarRuta(List<Long> contenedorIds, Long idDriver, Long idCentral, Long idPickUpPoint, LocalTime   startime, LocalTime endtime) {
         try {
             String contenedoresJson = objectMapper.writeValueAsString(contenedorIds);
-            routeRepository.planificarRuta(contenedoresJson, idDriver, idCentral, idPickUpPoint);
+            routeRepository.planificarRuta(contenedoresJson, idDriver, idCentral, idPickUpPoint, startime, endtime);
         } catch (Exception e) {
             System.err.println("Error en servicio planificarRuta: " + e.getMessage());
             throw new RuntimeException("Error al planificar ruta", e);

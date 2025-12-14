@@ -131,15 +131,9 @@ async function handleLogin() {
     auth.setToken(token)
     localStorage.setItem('jwt', token)
 
-  // jwt-decode may be exported as a CommonJS function or an ESM default. Support both shapes:
-  //const decoder = (jwt_decode && (jwt_decode.default || jwt_decode));
-  //const decoded = decoder ? decoder(token) : null; // Utiliza 'jwt-decode' para decodificar el JWT si está disponible
-  const decoded = jwtDecode(token);
-  const userTypeFromToken = decoded ? decoded.usertype : null;
-  
-  console.log('Tipo de usuario desde el token:', userTypeFromToken);
-  console.log('Token recibido:', token);
-
+    const decoded = jwtDecode(token);
+    const userTypeFromToken = decoded ? decoded.usertype : null;
+    
     emit('logged-in', token)
     // Redirigir a la vista según el tipo de usuario
     if (userTypeFromToken === 'admin') {

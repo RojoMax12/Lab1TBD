@@ -120,7 +120,7 @@
             <td>{{ r.end_time }}</td>
             <td>{{ r.route_status }}</td>
             <td>{{ r.id_central }}</td>
-            <td>{{ r.id_pick_up_point }}</td>
+            <td>{{ r.id_central_finish }}</td>
             <td>{{ r.contenedores.join(', ') }}</td>
             <td>
               <button class="btn-delete" @click="eliminarRuta(r.id)">Eliminar</button>
@@ -203,12 +203,11 @@ const rutasIneficientes = ref([])
 /* FORMULARIO */
 const nuevaRuta = ref({
   id_driver: "",
-  date: "",
+  date_: "",
   start_time: "",
   end_time: "",
   id_central: "",
-  id_central_end: "",
-  id_pick_up_point: "",
+  id_central_end: ""
 })
 
 const contenedoresSeleccionados = ref([])
@@ -252,9 +251,8 @@ function guardarRuta() {
     contenedores: contenedoresSeleccionados.value,
     idDriver: Number(nuevaRuta.value.id_driver),
     idCentral: Number(nuevaRuta.value.id_central),
-    idCentralEnd: nuevaRuta.value.id_central_end ? Number(nuevaRuta.value.id_central_end) : null,
-    idPickUpPoint: Number(nuevaRuta.value.id_pick_up_point),
-    date: nuevaRuta.value.date,
+    idCentralFinish: Number(nuevaRuta.value.id_central_end),
+    date: nuevaRuta.value.date_,
     startTime: nuevaRuta.value.start_time,
     endTime: nuevaRuta.value.end_time
   };
@@ -285,7 +283,6 @@ function guardarRuta() {
     end_time: "",
     id_central: "",
     id_central_end: "",
-    id_pick_up_point: "",
   }
 
   contenedoresSeleccionados.value = []
@@ -296,6 +293,7 @@ async function fetchRutas() {
   try {
     // 1️⃣ Obtener todas las rutas planificadas
     const res = await routeServices.getAllRoutes();
+    console.log(res)
     const rutasData = Array.isArray(res.data) ? res.data : res;
 
     // 2️⃣ Para cada ruta, obtener sus contenedores asociados

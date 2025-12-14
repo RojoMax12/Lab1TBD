@@ -242,7 +242,9 @@ CREATE OR REPLACE PROCEDURE planificar_ruta(
     p_contenedores JSON,
     p_id_driver BIGINT,
     p_id_central BIGINT,
-    p_id_central_finish BIGINT  -- Parámetro para la central de finalización
+    p_id_central_finish BIGINT,  -- Parámetro para la central de finalización
+    p_start_time TIME,           -- Hora de inicio como parámetro
+    p_end_time TIME              -- Hora de fin como parámetro
 )
 LANGUAGE plpgsql
 AS $$ 
@@ -283,9 +285,9 @@ BEGIN
         RAISE EXCEPTION 'Error: uno o más contenedores no existen o están asignados a una ruta pendiente';
     END IF;
 
-    -- Crear la nueva ruta
-    INSERT INTO route (id_driver, date_, route_status, id_central, id_central_finish)
-    VALUES (p_id_driver, NOW(), 'Pendiente', p_id_central, p_id_central_finish)
+    -- Crear la nueva ruta con las horas de inicio y fin
+    INSERT INTO route (id_driver, date_, start_time, end_time, route_status, id_central, id_central_finish)
+    VALUES (p_id_driver, NOW(), p_start_time, p_end_time, 'Pendiente', p_id_central, p_id_central_finish)
     RETURNING id INTO new_route_id;
 
     -- Asociar los contenedores con la nueva ruta usando la tabla `route_container`
@@ -305,9 +307,6 @@ BEGIN
     RAISE NOTICE 'Ruta planificada con ID % y % contenedores asignados', new_route_id, contenedor_count;
 END;
 $$;
-
-
-
 
 -- =========================================================
 -- Ejemplo de uso del procedimiento

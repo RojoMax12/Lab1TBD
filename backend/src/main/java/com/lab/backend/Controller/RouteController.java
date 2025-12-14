@@ -4,6 +4,9 @@ import com.lab.backend.Entities.RouteEntity;
 import com.lab.backend.Services.RouteServices;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +25,8 @@ public class RouteController {
         public Long idDriver;
         public Long idCentral;
         public Long idCentralFinish;
+        public LocalTime startTime; // Hora de inicio
+        public LocalTime   endTime;   // Hora de fin
     }
 
     @GetMapping("/")
@@ -72,7 +77,9 @@ public class RouteController {
                     request.contenedores,
                     request.idDriver,
                     request.idCentral,
-                    request.idCentralFinish
+                    request.idCentralFinish,
+                    request.startTime,  // Recibir start_time
+                    request.endTime     // Recibir end_time
             );
             return "Ruta planificada exitosamente";
         } catch (Exception e) {

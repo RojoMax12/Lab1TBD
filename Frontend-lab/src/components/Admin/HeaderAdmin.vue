@@ -68,7 +68,6 @@ onMounted(() => {
 
   try {
     const decoded = jwtDecode(token)
-    console.log("TOKEN DECODIFICADO:", decoded)
 
     userEmail.value = decoded.sub || decoded.email || null
 
@@ -85,15 +84,11 @@ onMounted(() => {
 ============================ */
 async function getAdminData(email) {
     try {
-        console.log("Obteniendo admin con email:", email)
         const response = await AdminServices.getAdminByEmail(email)
-
-        // Imprimir toda la respuesta
-        console.log("Respuesta de la API:", response)
 
         // Asegúrate de que la respuesta tenga los campos correctos
         const admin = response.data
-        console.log("Datos del admin:", admin)
+    
 
         name.value = admin.name
         lastname.value = admin.last_name

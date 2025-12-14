@@ -6,6 +6,8 @@ import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -152,14 +154,16 @@ public class RouteRepository {
     }
 
 
-    public void planificarRuta(String contenedoresJson, Long idDriver, Long idCentral, Long idCentralFinish) {
-        String sql = "CALL planificar_ruta(:contenedores::json, :idDriver, :idCentral, :idCentralFinish)";
+    public void planificarRuta(String contenedoresJson, Long idDriver, Long idCentral, Long idCentralFinish, LocalTime   startTime, LocalTime endTime) {
+        String sql = "CALL planificar_ruta(:contenedores::json, :idDriver, :idCentral, :idCentralFinish, :startTime, :endTime)";
         try (Connection conn = sql2o.open()) {
             conn.createQuery(sql)
                     .addParameter("contenedores", contenedoresJson)
                     .addParameter("idDriver", idDriver)
                     .addParameter("idCentral", idCentral)
-                    .addParameter("idCentralFinish", idCentralFinish)  // Pasando el parámetro de la central de finalización
+                    .addParameter("idCentralFinish", idCentralFinish)
+                    .addParameter("startTime", startTime)  // Agregar start_time
+                    .addParameter("endTime", endTime)      // Agregar end_time
                     .executeUpdate();
         } catch (Exception e) {
             System.err.println("Error al ejecutar planificar_ruta: " + e.getMessage());
