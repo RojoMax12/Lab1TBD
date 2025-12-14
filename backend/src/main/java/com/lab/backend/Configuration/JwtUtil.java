@@ -48,7 +48,7 @@ public class JwtUtil {
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)
                 .getBody()
-                .get("userType", String.class);  // Extrae el tipo de usuario
+                .get("usertype", String.class);  // Extrae el tipo de usuario
     }
 
 
