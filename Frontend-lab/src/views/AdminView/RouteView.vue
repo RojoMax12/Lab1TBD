@@ -233,31 +233,48 @@ function cerrarModal() {
   mostrarModal.value = false
 }
 
+// Función para guardar una nueva ruta
 function guardarRuta() {
+  // Primero, asegurémonos de que el formulario esté completo y que se hayan seleccionado contenedores
   if (!nuevaRuta.value.id_driver || contenedoresSeleccionados.value.length === 0) {
     alert("Debes completar el formulario y seleccionar contenedores.")
     return
   }
-  // Build payload for backend
+
+  // Imprimir los datos capturados en el formulario para verificar
+  console.log("Datos de la nueva ruta a guardar:", nuevaRuta.value);
+  console.log("Contenedores seleccionados:", contenedoresSeleccionados.value);
+
+  // Construir el payload para enviar al backend
   const payload = {
     contenedores: contenedoresSeleccionados.value,
     idDriver: Number(nuevaRuta.value.id_driver),
     idCentral: Number(nuevaRuta.value.id_central),
-    idPickUpPoint: Number(nuevaRuta.value.id_pick_up_point)
-  }
+    idPickUpPoint: Number(nuevaRuta.value.id_pick_up_point),
+    date: nuevaRuta.value.date,
+    startTime: nuevaRuta.value.start_time,
+    endTime: nuevaRuta.value.end_time
+  };
 
+  console.log("Payload enviado al backend:", payload);
+
+  // Llamar al servicio para crear la ruta
   routeServices.createroute(payload)
     .then(res => {
-      // on success, refresh routes list or push temporary
-      fetchRutas()
-      alert('Ruta planificada exitosamente')
+      // Si la creación fue exitosa, mostramos la respuesta
+      console.log("Respuesta de la API:", res);
+
+      // Refrescamos la lista de rutas planificadas
+      fetchRutas();
+
+      alert('Ruta planificada exitosamente');
     })
     .catch(err => {
-      console.error('Error creating route:', err)
-      alert('Error al planificar ruta: ' + (err.message || err))
-    })
+      console.error('Error creando ruta:', err);
+      alert('Error al planificar ruta: ' + (err.message || err));
+    });
 
-  // RESET local form
+  // Limpiar el formulario después de guardarlo
   nuevaRuta.value = {
     id_driver: "",
     date: "",
@@ -270,6 +287,7 @@ function guardarRuta() {
   contenedoresSeleccionados.value = []
   mostrarModal.value = false
 }
+
 
 async function fetchRutas() {
   try {
@@ -317,6 +335,7 @@ async function fetchPuntosRetiro() {
   try {
     const res = await pickUpServices.getAllPickUp()
     puntosRetiro.value = Array.isArray(res) ? res : (res.data || [])
+    console.log("estos son los puntos de retiro", puntosRetiro.value)
   } catch (e) {
     console.warn('Could not load pick up points via service:', e)
     puntosRetiro.value = []

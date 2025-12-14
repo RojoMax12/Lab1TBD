@@ -205,7 +205,7 @@ export default {
       containerServices.ContainersWithoutCollection()
         .then(response => {
           contenedoressinrecolectar.value = response.data
-          console.log(response.data)
+          console.log("contenedores sin recolectar",response.data)
         })
         .catch(error => {
           console.error("Error al obtener contenedores sin recolección:", error)

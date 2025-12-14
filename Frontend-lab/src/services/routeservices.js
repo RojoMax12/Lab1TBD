@@ -16,6 +16,7 @@ export default {
         return api.get('/api/route/efficiency');
     },
 
+
     wasteperformance() {
         return api.get('/api/route/waste-performance');
     },
@@ -26,6 +27,14 @@ export default {
 
     getAllRoutes() {
         return api.get('/api/route/');
+    },
+
+    getAllRouterBydriverIdPending(Iddriver) {
+        return api.get(`/api/route/driver/pending/${Iddriver}`);
+    },
+
+    getAllRouterBydriverIdFinish(Iddriver) {
+        return api.get(`/api/route/driver/finish/${Iddriver}`);
     },
 
     getRouteById(routeId) {

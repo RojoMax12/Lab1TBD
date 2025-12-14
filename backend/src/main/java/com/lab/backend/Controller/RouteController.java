@@ -29,10 +29,22 @@ public class RouteController {
         return routeService.findAllRoutes();
     }
 
+    @GetMapping("/driver/pending/{id}")
+    public List<RouteEntity> findAllRouteByDriverPending(@PathVariable Long id){
+        return routeService.getAllRoutesByIddriverPending(id);
+    }
+
+    @GetMapping("/driver/finish/{id}")
+    public List<RouteEntity> findAllRouteByDriverFinish(@PathVariable Long id){
+        return routeService.getAllRoutesByIddriverFinish(id);
+    }
+
     @GetMapping("/{id}")
     public RouteEntity findRouteById(@PathVariable Long id){
         return routeService.findRouteById(id);
     }
+
+
 
 
     @PutMapping("/{id}")

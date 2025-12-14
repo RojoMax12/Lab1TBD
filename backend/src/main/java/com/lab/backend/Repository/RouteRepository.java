@@ -59,6 +59,37 @@ public class RouteRepository {
         }
     }
 
+    public List<RouteEntity> getAllRoutesByDriverPending(Long id_driver) {
+        // Corregimos el SQL para que la condición de "route_status" esté bien formada.
+        String sql = "SELECT * FROM route WHERE id_driver = :id_driver AND route_status = :status";
+        try (Connection conn = sql2o.open()) {
+            // Usamos un parámetro con nombre "status" y pasamos su valor.
+            return conn.createQuery(sql)
+                    .addParameter("id_driver", id_driver)
+                    .addParameter("status", "Pendiente") // Asignamos el valor "pendiente" al parámetro
+                    .executeAndFetch(RouteEntity.class);
+        } catch (Exception e) {
+            System.err.println("Error al obtener las rutas: " + e.getMessage());
+            throw new RuntimeException("No se pudieron obtener las rutas", e);
+        }
+    }
+
+    public List<RouteEntity> getAllRoutesByDriverFinish(Long id_driver) {
+        String sql = "SELECT * FROM route WHERE id_driver = :id_driver AND route_status = :route_status";  // Usar parámetros
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("id_driver", id_driver)  // Pasar el id del conductor
+                    .addParameter("route_status", "Finalizada")  // Pasar el valor de estado
+                    .executeAndFetch(RouteEntity.class);  // Ejecutar la consulta y mapear los resultados
+        } catch (Exception e) {
+            System.err.println("Error al obtener las rutas: " + e.getMessage());
+            throw new RuntimeException("No se pudieron obtener las rutas", e);
+        }
+    }
+
+
+
     public void updateRoute(Long id, RouteEntity routeEntity) {
         String sql = "UPDATE route SET id_driver = :id_driver, date_ = :date_, start_time = :start_time, " +
                 "end_time = :end_time, route_status = :route_status, id_central = :id_central, " +

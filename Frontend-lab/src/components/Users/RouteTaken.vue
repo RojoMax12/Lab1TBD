@@ -1,6 +1,6 @@
 <template>
   <div class="route-taken-view">
-    <h1 class="title">Rutas Tomadas</h1>
+    <h1 class="title">Rutas realizadas</h1>
 
     <div class="container">
       <div class="horizontal-scroll">
@@ -19,43 +19,17 @@
           </thead>
 
           <tbody>
-            <!-- Ruta Ejemplo 1 -->
-            <tr>
-              <td>1</td>
-              <td>12</td>
-              <td>2025-11-12</td>
-              <td>08:30</td>
-              <td>09:10</td>
-              <td>Completada</td>
-              <td>5</td>
-              <td>22</td>
-            </tr>
-
-            <!-- Ruta Ejemplo 2 -->
-            <tr>
-              <td>2</td>
-              <td>7</td>
-              <td>2025-11-10</td>
-              <td>14:00</td>
-              <td>14:45</td>
-              <td>En progreso</td>
-              <td>3</td>
-              <td>31</td>
-            </tr>
-
-            <!-- Ruta Ejemplo 3 -->
-            <tr>
-              <td>3</td>
-              <td>18</td>
-              <td>2025-11-03</td>
-              <td>09:15</td>
-              <td>10:00</td>
-              <td>Cancelada</td>
-              <td>2</td>
-              <td>16</td>
-            </tr>
-          </tbody>
-
+              <tr v-for="route in routes.data" :key="route.id">
+                <td>{{ route.id }}</td>
+                <td>{{ route.id_driver }}</td>
+                <td>{{ route.date_ }}</td>
+                <td>{{ route.start_time }}</td>
+                <td>{{ route.end_time }}</td>
+                <td>{{ route.route_status }}</td>
+                <td>{{ route.id_central }}</td>
+                <td>{{ route.id_pick_up_point }}</td>
+              </tr>
+            </tbody>
         </table>
       </div>
     </div>
@@ -64,6 +38,75 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import routeServices from '@/services/routeservices';
+import DriverServices from '@/services/driverservices';
+import { jwtDecode } from "jwt-decode";
+
+// Definir variables reactivas
+const routes = ref([]); // Lista de rutas asignadas
+const userEmail = ref(""); // Email del usuario logueado
+const driver = ref(null); // Conductor obtenido desde la API
+
+// Obtener los datos del conductor logueado
+async function getDriverData(email) {
+  try {
+    console.log("Obteniendo datos del conductor con email:", email);
+    const response = await DriverServices.getDriverByEmail(email);
+
+    // Si la respuesta es exitosa, asignar los datos al objeto `driver`
+    driver.value = response.data;
+    console.log("Datos del conductor:", driver.value);
+
+    // Ahora que tenemos los datos del conductor, obtenemos sus rutas asignadas
+    if (driver.value) {
+      getallrouteassigned(driver.value); // Llamar a la función para obtener las rutas
+    }
+  } catch (err) {
+    console.error("Error obteniendo los datos del conductor:", err);
+  }
+}
+
+// Obtener todas las rutas asignadas al conductor logueado
+const getallrouteassigned = (driver) => {
+  if (!driver || !driver.id) return; // Asegurarnos de que el `driver` tenga un id
+  routeServices.getAllRouterBydriverIdFinish(driver.id)
+    .then((data) => {
+      routes.value = data; // Asignamos las rutas obtenidas al arreglo `routes`
+      console.log("Rutas obtenidas para el conductor:", driver.id, data);
+    })
+    .catch((error) => {
+      console.error("Error al obtener las rutas:", error);
+    });
+};
+
+// Función para tomar la ruta
+const takeRoute = (route) => {
+  if (route.route_status !== 'Tomada') {
+    route.route_status = 'Tomada';  // Cambiar el estado de la ruta a tomada
+    console.log(`Ruta tomada con ID: ${route.id}`);
+    alert(`Ruta con ID ${route.id} ha sido tomada.`);
+  }
+};
+
+onMounted(() => {
+  const token = localStorage.getItem('jwt');  // Obtener el token del almacenamiento local
+
+  if (!token) return;  // Si no hay token, no hacer nada
+
+  try {
+    const decoded = jwtDecode(token);  // Decodificar el token JWT
+    console.log("Token decodificado:", decoded);
+
+    userEmail.value = decoded.sub || decoded.email || null;
+
+    if (userEmail.value) {
+      getDriverData(userEmail.value);  // Llamar para obtener los datos del conductor
+    }
+  } catch (error) {
+    console.error("Error al decodificar el token:", error);
+  }
+});
 </script>
 
 <style scoped>

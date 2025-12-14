@@ -23,6 +23,14 @@ public class RouteServices {
         return routeRepository.CreateRoute(routeEntity);
     }
 
+    public List<RouteEntity> getAllRoutesByIddriverPending(Long iddriver) {
+        return routeRepository.getAllRoutesByDriverPending(iddriver);
+    }
+
+    public List<RouteEntity> getAllRoutesByIddriverFinish(Long iddriver) {
+        return routeRepository.getAllRoutesByDriverFinish(iddriver);
+    }
+
     public List<RouteEntity> findAllRoutes() {
         return routeRepository.getAllRoutes();
     }

@@ -1,80 +1,126 @@
 <template>
   <div>
     <HomeDriverView />
-  </div>
 
-  <div class="route-assigned-view">
-    <h1 class="title">Rutas Asignadas</h1>
+    <div class="route-assigned-view">
+      <h1 class="title">Rutas Asignadas</h1>
 
-    <div class="container">
-      <div class="horizontal-scroll">
-        <table class="route-table">
-          <thead>
-            <tr>
-              <th>ID Ruta</th>
-              <th>ID Conductor</th>
-              <th>Fecha</th>
-              <th>Hora Inicio</th>
-              <th>Hora Fin</th>
-              <th>Estado Ruta</th>
-              <th>ID Central</th>
-              <th>ID Punto de Retiro</th>
+      <div class="container">
+        <div class="horizontal-scroll">
+          <table class="route-table">
+            <thead>
+              <tr>
+                <th>ID Ruta</th>
+                <th>ID Conductor</th>
+                <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Estado Ruta</th>
+                <th>ID Central</th>
+                <th>ID Punto de Retiro</th>
                 <th>Acciones</th>
-            </tr>
-          </thead>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr v-for="driver in drivers" :key="driver.id">
-              <td>{{ driver.id }}</td>
-              <td>{{ driver.id_driver }}</td>
-              <td>{{ driver.date_ }}</td>
-              <td>{{ driver.start_time }}</td>
-              <td>{{ driver.end_time }}</td>
-              <td>{{ driver.route_status }}</td>
-              <td>{{ driver.id_central }}</td>
-              <td>{{ driver.id_pick_up_point }}</td>
-              <td class="row-actions">
-                <button class="btn-take" @click="Take(driver)">Tomar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <tbody>
+              <tr v-for="route in routes.data" :key="route.id">
+                <td>{{ route.id }}</td>
+                <td>{{ route.id_driver }}</td>
+                <td>{{ route.date_ }}</td>
+                <td>{{ route.start_time }}</td>
+                <td>{{ route.end_time }}</td>
+                <td>{{ route.route_status }}</td>
+                <td>{{ route.id_central }}</td>
+                <td>{{ route.id_pick_up_point }}</td>
+                <td class="row-actions">
+                  <button
+                    class="btn-take"
+                    @click="takeRoute(route)"
+                    :disabled="route.route_status === 'Tomada'"
+                  >
+                    {{ route.route_status === 'Tomada' ? 'Ruta Tomada' : 'Tomar' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import HomeDriverView from '@/components/Users/HomeDrive.vue'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue';
+import HomeDriverView from '@/components/Users/HomeDrive.vue';
+import routeServices from '@/services/routeservices';
+import DriverServices from '@/services/driverservices';
+import { jwtDecode } from "jwt-decode";
 
-const drivers = ref([
-  {
-    id: 1,
-    id_driver: 101,
-    date_: '12/11/2025',
-    start_time: '09:00',
-    end_time: '12:00',
-    route_status: 'Asignada',
-    id_central: 5,
-    id_pick_up_point: 20
-  },
-  {
-    id: 2,
-    id_driver: 102,
-    date_: '13/11/2025',
-    start_time: '10:00',
-    end_time: '13:00',
-    route_status: 'Asignada',
-    id_central: 6,
-    id_pick_up_point: 21
+// Definir variables reactivas
+const routes = ref([]); // Lista de rutas asignadas
+const userEmail = ref(""); // Email del usuario logueado
+const driver = ref(null); // Conductor obtenido desde la API
+
+// Obtener los datos del conductor logueado
+async function getDriverData(email) {
+  try {
+    console.log("Obteniendo datos del conductor con email:", email);
+    const response = await DriverServices.getDriverByEmail(email);
+
+    // Si la respuesta es exitosa, asignar los datos al objeto `driver`
+    driver.value = response.data;
+    console.log("Datos del conductor:", driver.value);
+
+    // Ahora que tenemos los datos del conductor, obtenemos sus rutas asignadas
+    if (driver.value) {
+      getallrouteassigned(driver.value); // Llamar a la función para obtener las rutas
+    }
+  } catch (err) {
+    console.error("Error obteniendo los datos del conductor:", err);
   }
-])
-
-const Take = (driver) => {
-  // Aquí puedes implementar la lógica para "tomar" la ruta o hacer alguna acción.
-  console.log("Ruta tomada por el conductor:", driver.id);
 }
+
+// Obtener todas las rutas asignadas al conductor logueado
+const getallrouteassigned = (driver) => {
+  if (!driver || !driver.id) return; // Asegurarnos de que el `driver` tenga un id
+  routeServices.getAllRouterBydriverIdPending(driver.id)
+    .then((data) => {
+      routes.value = data; // Asignamos las rutas obtenidas al arreglo `routes`
+      console.log("Rutas obtenidas para el conductor:", driver.id, data);
+    })
+    .catch((error) => {
+      console.error("Error al obtener las rutas:", error);
+    });
+};
+
+// Función para tomar la ruta
+const takeRoute = (route) => {
+  if (route.route_status !== 'Tomada') {
+    route.route_status = 'Tomada';  // Cambiar el estado de la ruta a tomada
+    console.log(`Ruta tomada con ID: ${route.id}`);
+    alert(`Ruta con ID ${route.id} ha sido tomada.`);
+  }
+};
+
+onMounted(() => {
+  const token = localStorage.getItem('jwt');  // Obtener el token del almacenamiento local
+
+  if (!token) return;  // Si no hay token, no hacer nada
+
+  try {
+    const decoded = jwtDecode(token);  // Decodificar el token JWT
+    console.log("Token decodificado:", decoded);
+
+    userEmail.value = decoded.sub || decoded.email || null;
+
+    if (userEmail.value) {
+      getDriverData(userEmail.value);  // Llamar para obtener los datos del conductor
+    }
+  } catch (error) {
+    console.error("Error al decodificar el token:", error);
+  }
+});
 </script>
 
 <style scoped>
@@ -84,7 +130,7 @@ const Take = (driver) => {
   margin: 2rem auto;
   background: #fff;
   border-radius: 1.2rem;
-  box-shadow: 0 6px 18px rgba(78,83,54,0.10);
+  box-shadow: 0 6px 18px rgba(78, 83, 54, 0.10);
   padding: 2rem 1.2rem;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
 }
@@ -109,7 +155,7 @@ const Take = (driver) => {
   border-spacing: 0;
   background: #fff;
   border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(78,83,54,0.08);
+  box-shadow: 0 2px 8px rgba(78, 83, 54, 0.08);
 }
 
 .route-table th, .route-table td {
@@ -121,7 +167,7 @@ const Take = (driver) => {
 }
 
 .route-table th {
-  background: linear-gradient(180deg,#5e6541,#52563f);
+  background: linear-gradient(180deg, #5e6541, #52563f);
   color: #fff;
   font-weight: 600;
   letter-spacing: 0.2px;
@@ -149,8 +195,8 @@ const Take = (driver) => {
 }
 
 .scrollable-table {
-  max-height: 300px; 
-  overflow-y: auto;  
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .btn-take {
@@ -163,4 +209,15 @@ const Take = (driver) => {
   font-weight: 600;
   transition: background 0.18s, box-shadow 0.18s;
 }
+
+.btn-take:disabled {
+  background: #dcdcdc;
+  cursor: not-allowed;
+}
+
+.btn-take:hover:not(:disabled) {
+  background-color: #3f4732;
+}
+
+
 </style>
