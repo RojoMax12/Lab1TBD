@@ -84,7 +84,7 @@ async function getDriverData(email) {
 // Obtener todas las rutas asignadas al conductor logueado
 const getallrouteassigned = (driver) => {
   if (!driver || !driver.id) return; // Asegurarnos de que el `driver` tenga un id
-  routeServices.getAllRouterBydriverIdPending(driver.id)
+  routeServices.getAllRouterByDriverIdPending(driver.id)
     .then((data) => {
       routes.value = data; // Asignamos las rutas obtenidas al arreglo `routes`
       console.log("Rutas obtenidas para el conductor:", driver.id, routes);
@@ -94,6 +94,7 @@ const getallrouteassigned = (driver) => {
     });
 };
 
+// Función para tomar la ruta
 const takeRoute = (route) => {
   if (route.route_status !== 'Tomada') {
     // Cambiar el estado de la ruta a 'En Proceso'
@@ -113,7 +114,6 @@ const takeRoute = (route) => {
       });
   }
 };
-
 
 onMounted(() => {
   const token = localStorage.getItem('jwt');  // Obtener el token del almacenamiento local
@@ -230,6 +230,4 @@ onMounted(() => {
 .btn-take:hover:not(:disabled) {
   background-color: #3f4732;
 }
-
-
 </style>

@@ -70,7 +70,7 @@ async function getDriverData(email) {
 // Obtener todas las rutas asignadas al conductor logueado
 const getallrouteassigned = (driver) => {
   if (!driver || !driver.id) return; // Asegurarnos de que el `driver` tenga un id
-  routeServices.getAllRouterBydriverIdFinish(driver.id)
+  routeServices.getAllRouterByDriverIdFinish(driver.id)
     .then((data) => {
       routes.value = data; // Asignamos las rutas obtenidas al arreglo `routes`
       console.log("Rutas obtenidas para el conductor:", driver.id, data);
