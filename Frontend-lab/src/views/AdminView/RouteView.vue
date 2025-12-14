@@ -47,17 +47,17 @@
         <label class="label">Central:</label>
         <select v-model="nuevaRuta.id_central" class="input">
           <option disabled value="">Seleccionar central</option>
-          <option v-for="c in centrales" :key="c.id" :value="c.id">
-            Central {{ c.id }} — {{ c.nombre }}
+          <option v-for="c in centrales" :key="c.id" :value="c.id" :disabled="c.id === nuevaRuta.id_central_end">
+            Central {{ c.id }} — {{ c.name }}
           </option>
         </select>
 
-        <!-- PUNTO RECOLECCIÓN -->
-        <label class="label">Punto de Retiro:</label>
-        <select v-model="nuevaRuta.id_pick_up_point" class="input">
-          <option disabled value="">Seleccionar punto</option>
-          <option v-for="p in puntosRetiro" :key="p.id" :value="p.id">
-            Punto {{ p.id }} — {{ p.descripcion }}
+        <!-- Central de fin -->
+        <label class="label">Central de finalización:</label>
+        <select v-model="nuevaRuta.id_central_end" class="input">
+          <option disabled value="">Seleccionar central</option>
+          <option v-for="ce in centrales" :key="ce.id" :value="ce.id" :disabled="ce.id === nuevaRuta.id_central">
+            Central {{ ce.id }} — {{ ce.name }}
           </option>
         </select>
 
@@ -65,17 +65,17 @@
         <label class="label">Contenedores:</label>
         <div class="checkbox-list">
           <label 
-            v-for="c in contenedores" 
-            :key="c.id" 
+            v-for="co in contenedores" 
+            :key="co.id" 
             class="checkbox-item"
           >
             <input 
               type="checkbox" 
               v-model="contenedoresSeleccionados" 
-              :value="c.id" 
+              :value="co.id" 
             />
             <span>
-              ID {{ c.id }} — {{ c.status }} — Central {{ c.id_central }}
+              ID {{ co.id }} — {{ co.status }} — Central {{ co.id_central }}
             </span>
           </label>
         </div>
@@ -206,6 +206,7 @@ const nuevaRuta = ref({
   start_time: "",
   end_time: "",
   id_central: "",
+  id_central_end: "",
   id_pick_up_point: "",
 })
 
@@ -250,6 +251,7 @@ function guardarRuta() {
     contenedores: contenedoresSeleccionados.value,
     idDriver: Number(nuevaRuta.value.id_driver),
     idCentral: Number(nuevaRuta.value.id_central),
+    idCentralEnd: nuevaRuta.value.id_central_end ? Number(nuevaRuta.value.id_central_end) : null,
     idPickUpPoint: Number(nuevaRuta.value.id_pick_up_point),
     date: nuevaRuta.value.date,
     startTime: nuevaRuta.value.start_time,
@@ -281,6 +283,7 @@ function guardarRuta() {
     start_time: "",
     end_time: "",
     id_central: "",
+    id_central_end: "",
     id_pick_up_point: "",
   }
 
