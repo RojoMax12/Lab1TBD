@@ -9,5 +9,4 @@
 <script setup>
 import HomeDriverView from '@/components/Users/HomeDrive.vue'
 import RouteTaken from '@/components/Users/RouteTaken.vue';
-console.log("RouteTaken cargado");
 </script>

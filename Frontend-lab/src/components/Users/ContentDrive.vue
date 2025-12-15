@@ -159,7 +159,6 @@ async function getactualroute(driverId) {
     const response = await RouteServices.findRouteByStatusAndIdDriver(driverId, 'EnProceso');
     
     if (!response.data) {
-      console.log("No se encontró una ruta en proceso para este conductor.");
       routeactual.value.route_status = 'Sin Ruta';
       return; 
     }
@@ -218,7 +217,6 @@ async function fetchContainerRoute(routeId) {
     const containerPromises = routecontainers.value.map(async (rc) => {
       const resContainer = await ContainerServices.getContainerById(rc.id_container);
       const container = resContainer.data;
-      console.log(container)
       
       let waste = null;
       if (container?.id_waste) {

@@ -65,7 +65,6 @@ onMounted(() => {
 
   try {
     const decoded = jwtDecode(token)
-    console.log("TOKEN DECODIFICADO:", decoded)
 
     userEmail.value = decoded.sub || decoded.email || null
 
@@ -79,15 +78,13 @@ onMounted(() => {
 
 async function getDriverData(email) {
     try {
-        console.log("Obteniendo driver con email:", email)
+
         const response = await DriverServices.getDriverByEmail(email)
 
-        // Imprimir toda la respuesta
-        console.log("Respuesta de la API:", response)
-
+   
         // Asegúrate de que la respuesta tenga los campos correctos
         const driver = response.data
-        console.log("Datos del driver:", driver)
+  
 
         name.value = driver.name
         lastname.value = driver.last_name

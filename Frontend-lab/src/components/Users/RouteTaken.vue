@@ -123,7 +123,7 @@ const getallrouteassigned = (driver) => {
 
   routeServices.getAllRouterByDriverIdFinish(driver.id)
     .then((data) => {
-      console.log("Datos recibidos del servicio:", data);
+
       // data puede venir como respuesta axios (data.data) o como array directo
       const arr = Array.isArray(data && data.data) ? data.data : (Array.isArray(data) ? data : (data && Array.isArray(data) ? data : []));
 
@@ -145,7 +145,6 @@ const getallrouteassigned = (driver) => {
 
       // Guardar en la forma que usa la plantilla (routes.data)
       routes.value = { data: arr };
-      console.log("Rutas obtenidas para el conductor:", driver.id, routes.value);
     })
     .catch((error) => {
       console.error("Error al obtener las rutas:", error);

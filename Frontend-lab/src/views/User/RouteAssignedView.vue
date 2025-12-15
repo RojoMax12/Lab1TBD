@@ -69,12 +69,12 @@ const centralNames = ref({}); // cache id -> name
 // Obtener los datos del conductor logueado
 async function getDriverData(email) {
   try {
-    console.log("Obteniendo datos del conductor con email:", email);
+
     const response = await DriverServices.getDriverByEmail(email);
 
     // Si la respuesta es exitosa, asignar los datos al objeto `driver`
     driver.value = response.data;
-    console.log("Datos del conductor:", driver.value);
+
 
     // Ahora que tenemos los datos del conductor, obtenemos sus rutas asignadas
     if (driver.value) {
@@ -148,7 +148,7 @@ const getallrouteassigned = async (driver) => {
     // 3) Combinar pendientes + activas para mostrar en la tabla (mantenemos formato axios-like { data: [...] })
     const combined = [...activeRoutes, ...pending];
     routes.value = { data: combined };
-    console.log('Rutas obtenidas para el conductor:', driver.id, routes.value);
+
   } catch (error) {
     console.error('Error al obtener las rutas:', error);
   }
@@ -192,7 +192,6 @@ const takeRoute = (route) => {
   route.route_status = 'EnProceso';
   route.id_driver = driver.value.id;
 
-  console.log(`Ruta con ID ${route.id} tomada por el conductor con ID ${driver.value.id}`);
 
   // Llamada al backend para actualizar el estado
   routeServices.updateRouteStatus(route.id, 'EnProceso')
@@ -216,7 +215,6 @@ onMounted(() => {
 
   try {
     const decoded = jwtDecode(token);  // Decodificar el token JWT
-    console.log("Token decodificado:", decoded);
 
     userEmail.value = decoded.sub || decoded.email || null;
 

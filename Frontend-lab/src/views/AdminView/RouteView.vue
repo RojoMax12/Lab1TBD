@@ -301,7 +301,6 @@ async function fetchRutas() {
   try {
     // 1️⃣ Obtener todas las rutas planificadas
     const res = await routeServices.getAllRoutes();
-    console.log(res)
     let rutasData = Array.isArray(res.data) ? res.data : res;
 
     // Ordenar descendente: preferimos ordenar por id si está disponible,
