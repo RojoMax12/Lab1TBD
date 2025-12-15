@@ -142,13 +142,41 @@ public class RouteRepository {
 
 
     public void deleteRoute(Long id) {
-        String sql = "DELETE FROM route WHERE id = :id";
+        // Eliminar una ruta debe también liberar los contenedores asociados.
+        // Pasos dentro de una conexión:
+        // 1) Obtener ids de contenedores asociados a la ruta
+        // 2) Actualizar el estado de esos contenedores a 'Disponible' si estaban 'Ocupado'
+        // 3) Eliminar los registros de route_container asociados a la ruta
+        // 4) Eliminar la ruta
         try (Connection conn = sql2o.open()) {
-            conn.createQuery(sql)
+            // 1) Obtener ids de contenedores
+            String sqlGetContainers = "SELECT id_container FROM route_container WHERE id_route = :id_route";
+            List<Long> containerIds = conn.createQuery(sqlGetContainers)
+                    .addParameter("id_route", id)
+                    .executeAndFetch(Long.class);
+
+            if (containerIds != null && !containerIds.isEmpty()) {
+                // 2) Actualizar estado de contenedores a 'Disponible' solo si estaban 'Ocupado'
+                String sqlUpdateContainers = "UPDATE container SET status = 'Disponible' WHERE id IN (:ids) AND status = 'Ocupado'";
+                conn.createQuery(sqlUpdateContainers)
+                        .addParameter("ids", containerIds)
+                        .executeUpdate();
+
+                // 3) Eliminar registros en route_container para esta ruta
+                String sqlDeleteRouteContainers = "DELETE FROM route_container WHERE id_route = :id_route";
+                conn.createQuery(sqlDeleteRouteContainers)
+                        .addParameter("id_route", id)
+                        .executeUpdate();
+            }
+
+            // 4) Eliminar la ruta
+            String sqlDeleteRoute = "DELETE FROM route WHERE id = :id";
+            conn.createQuery(sqlDeleteRoute)
                     .addParameter("id", id)
                     .executeUpdate();
+
         } catch (Exception e) {
-            System.err.println("Error al eliminar la ruta: " + e.getMessage());
+            System.err.println("Error al eliminar la ruta y liberar contenedores: " + e.getMessage());
             throw new RuntimeException("No se pudo eliminar la ruta", e);
         }
     }

@@ -36,9 +36,10 @@
                   <button
                     class="btn-take"
                     @click="takeRoute(route)"
-                    :disabled="route.route_status === 'Tomada'"
+                    :disabled="isBlocked(route)"
                   >
-                    {{ route.route_status === 'Tomada' ? 'Ruta Tomada' : 'Tomar' }}
+                    <!-- Mostrar texto según estado -->
+                    {{ route.route_status === 'EnProceso' || route.route_status === 'En Proceso' ? 'En Proceso' : (route.route_status === 'Tomada' ? 'Ruta Tomada' : 'Tomar') }}
                   </button>
                 </td>
               </tr>
@@ -94,25 +95,59 @@ const getallrouteassigned = (driver) => {
     });
 };
 
+// Comprueba si hay alguna ruta activa en proceso para este conductor
+const hasActiveRoute = () => {
+  if (!routes.value || !routes.value.data) return false;
+  return routes.value.data.some(r => {
+    const s = (r.route_status || '').toString();
+    return s === 'EnProceso' || s === 'En Proceso' || s === 'Tomada';
+  });
+}
+
+// Determina si una ruta concreta debe estar bloqueada (no se puede tomar)
+const isBlocked = (route) => {
+  // Si la ruta ya está en proceso o tomada, bloquear su botón (no permitir volver a "tomar")
+  if (!route) return true;
+  const status = (route.route_status || '').toString();
+  // If this route is already EnProceso, keep it disabled for taking (it's already taken)
+  if (status === 'EnProceso' || status === 'En Proceso' || status === 'Tomada') return true;
+
+  // Si hay otra ruta activa (EnProceso/Tomada), bloquear esta
+  if (hasActiveRoute()) return true;
+
+  // Otherwise it's available
+  return false;
+}
+
 // Función para tomar la ruta
 const takeRoute = (route) => {
-  if (route.route_status !== 'Tomada') {
-    // Cambiar el estado de la ruta a 'En Proceso'
-    route.route_status = 'En Proceso';  // Cambiar el estado a 'En Proceso'
-    route.id_driver = driver.value.id;  // Asignar el id del conductor a la ruta
-    
-    console.log(`Ruta con ID ${route.id} tomada por el conductor con ID ${driver.value.id}`);
-    
-    // Hacer la llamada a la API para actualizar la ruta
-    routeServices.updateRouteStatus(route.id, "EnProceso")
-      .then(() => {
-        alert(`Ruta con ID ${route.id} ha sido tomada y está en proceso.`);
-      })
-      .catch((error) => {
-        console.error("Error al actualizar la ruta:", error);
-        alert("Hubo un error al asignar la ruta.");
-      });
+  if (!route) return;
+
+  // Si ya hay una ruta activa, no permitimos tomar otra
+  if (hasActiveRoute()) {
+    alert('Ya tienes una ruta en curso. Debes finalizarla antes de tomar otra.');
+    return;
   }
+
+  // Marcar localmente como en proceso para feedback inmediato
+  route.route_status = 'EnProceso';
+  route.id_driver = driver.value.id;
+
+  console.log(`Ruta con ID ${route.id} tomada por el conductor con ID ${driver.value.id}`);
+
+  // Llamada al backend para actualizar el estado
+  routeServices.updateRouteStatus(route.id, 'EnProceso')
+    .then(() => {
+      // Refrescar la lista para reflejar cambios y bloqueo de otras rutas
+      if (driver.value) getallrouteassigned(driver.value);
+      alert(`Ruta con ID ${route.id} ha sido tomada y está en proceso.`);
+    })
+    .catch((error) => {
+      console.error('Error al actualizar la ruta:', error);
+      alert('Hubo un error al asignar la ruta. Intenta de nuevo.');
+      // Revertir cambio local en caso de error
+      route.route_status = 'Pendiente';
+    });
 };
 
 onMounted(() => {
