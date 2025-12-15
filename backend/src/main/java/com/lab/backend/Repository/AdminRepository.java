@@ -19,7 +19,7 @@ public class AdminRepository {
     }
 
     public AdminEntity CreateAdmin(AdminEntity admin) {
-        String sql = "Insert into admin (name, last_name, email, password, role) values (:name, :lastName, :email, :password, :role)";
+        String sql = "Insert into admin (name, last_name, email, password, role) values (:name, :last_name, :email, :password, :role)";
         Connection connection = null;
         try {
             connection = sql2o.open();
@@ -95,14 +95,14 @@ public class AdminRepository {
     }
 
     public void updateAdmin(Long id, AdminEntity admin) {
-        String sql = "UPDATE admin SET name = :name, last_name = :lastName, email = :email, password = :password WHERE id = :id";
+        String sql = "UPDATE admin SET name = :name, last_name = :last_name, email = :email, password = :password WHERE id = :id";
         try (Connection connection = sql2o.open()) {
             connection.createQuery(sql)
                     .addParameter("name", admin.getName())
                     .addParameter("last_name", admin.getLast_name())
                     .addParameter("email", admin.getEmail())
                     .addParameter("password", admin.getPassword())
-                    .addParameter("id", admin.getId())
+                    .addParameter("id", id)
                     .executeUpdate();
         } catch (Sql2oException e) {
             System.err.println("Error al actualizar el admin: ");

@@ -104,8 +104,8 @@
             <th>Inicio</th>
             <th>Fin</th>
             <th>Estado</th>
-            <th>Central</th>
-            <th>Punto Retiro</th>
+            <th>Central Inicio</th>
+            <th>Central Fin</th>
             <th>Contenedores</th>
             <th>Acciones</th>
           </tr>
@@ -114,13 +114,13 @@
         <tbody class="Data-text">
           <tr v-for="r in rutas" :key="r.id">
             <td>{{ r.id }}</td>
-            <td>{{ r.id_driver }}</td>
+            <td>{{ getNameDriverById(r.id_driver) }}</td>
             <td>{{ r.date_ }}</td>
             <td>{{ r.start_time }}</td>
             <td>{{ r.end_time }}</td>
             <td>{{ r.route_status }}</td>
-            <td>{{ r.id_central }}</td>
-            <td>{{ r.id_central_finish }}</td>
+            <td>{{ getNameCentralById(r.id_central) }}</td>
+            <td>{{ getNameCentralById(r.id_central_finish) }}</td>
             <td>{{ r.contenedores.join(', ') }}</td>
             <td>
               <button class="btn-delete" @click="eliminarRuta(r.id)">Eliminar</button>
@@ -289,12 +289,43 @@ function guardarRuta() {
   mostrarModal.value = false
 }
 
+// Helper: convertir cadena de hora (HH:mm o HH:mm:ss) a formato 12h AM/PM
+function formatTimeToAMPM(timeStr) {
+  if (!timeStr) return ''
+  // Aceptar formatos como "HH:mm" o "HH:mm:ss"
+  const parts = String(timeStr).split(':')
+  if (parts.length < 2) return String(timeStr)
+  let hour = parseInt(parts[0], 10)
+  const minute = parts[1]
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  hour = hour % 12
+  if (hour === 0) hour = 12
+  return `${hour}:${minute} ${ampm}`
+}
+
 async function fetchRutas() {
   try {
     // 1️⃣ Obtener todas las rutas planificadas
     const res = await routeServices.getAllRoutes();
     console.log(res)
-    const rutasData = Array.isArray(res.data) ? res.data : res;
+    let rutasData = Array.isArray(res.data) ? res.data : res;
+
+    // Ordenar descendente: preferimos ordenar por id si está disponible,
+    // si no por fecha (`date`/`date_`) y luego por start_time.
+    rutasData = rutasData.slice().sort((a, b) => {
+      // Orden por id si ambos tienen id
+      if (a.id != null && b.id != null) return Number(b.id) - Number(a.id)
+
+      // Intentar ordenar por fecha (soporta `date` o `date_`)
+      const dateA = a.date || a.date_ || ''
+      const dateB = b.date || b.date_ || ''
+      if (dateA !== dateB) return dateB.localeCompare(dateA)
+
+      // Finalmente ordenar por hora de inicio
+      const startA = a.startTime || a.start_time || a.start || ''
+      const startB = b.startTime || b.start_time || b.start || ''
+      return String(startB).localeCompare(String(startA))
+    })
 
     // 2️⃣ Para cada ruta, obtener sus contenedores asociados
     const rutasConContenedores = await Promise.all(
@@ -313,12 +344,52 @@ async function fetchRutas() {
       })
     );
 
-    // 3️⃣ Guardar el resultado en el estado de Vue
-    rutas.value = rutasConContenedores;
+    // 3️⃣ Normalizar horas a formato AM/PM y guardar el resultado en el estado de Vue
+    const rutasFormateadas = rutasConContenedores.map(r => {
+      // Normalizar nombres de campos (start/end pueden venir como start_time o startTime)
+      const rawStart = r.start_time || r.startTime || r.start || ''
+      const rawEnd = r.end_time || r.endTime || r.end || ''
+
+      return {
+        ...r,
+        // Sobrescribimos los campos que usa la plantilla para mostrar las horas
+        start_time: formatTimeToAMPM(rawStart),
+        end_time: formatTimeToAMPM(rawEnd),
+        // normalizamos también la fecha si existe como `date`
+        date_: r.date_ || r.date || ''
+      }
+    })
+
+    // Asegurar orden descendente por id (fallback by fecha/hora si no hay id)
+    rutasFormateadas.sort((a, b) => {
+      if (a.id != null && b.id != null) return Number(b.id) - Number(a.id)
+      const dateA = a.date_ || ''
+      const dateB = b.date_ || ''
+      if (dateA !== dateB) return dateB.localeCompare(dateA)
+      const startA = a.start_time || ''
+      const startB = b.start_time || ''
+      return String(startB).localeCompare(String(startA))
+    })
+
+    rutas.value = rutasFormateadas;
 
   } catch (e) {
     console.error('Error fetching routes:', e);
   }
+}
+
+function getNameDriverById(id) {
+  if (id === null || id === undefined) return ''
+  const found = drivers.value.find(d => String(d.id) === String(id))
+  if (found) return found.name || found.fullName || found.username || ''
+  return String(id)
+}
+
+function getNameCentralById(id) {
+  if (id === null || id === undefined) return ''
+  const found = centrales.value.find(c => String(c.id) === String(id))
+  if (found) return found.name || found.location || ''
+  return String(id)
 }
 
 

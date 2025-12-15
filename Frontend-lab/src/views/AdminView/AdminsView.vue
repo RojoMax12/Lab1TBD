@@ -151,14 +151,20 @@ export default {
         })
     }
 
-    // Eliminar administrador
+    // Eliminar administrador (con confirmación)
     const eliminarAdmin = (id) => {
+      if (!id) return
+      const confirmMsg = '¿Confirma que desea eliminar al administrador #' + id + '? Esta acción no se puede deshacer.'
+      if (!confirm(confirmMsg)) return
+
       AdminServices.deleteAdmin(id)
         .then(() => {
           obtenerAdmins()
+          alert('Administrador eliminado correctamente')
         })
         .catch((error) => {
           console.error('Error al eliminar administrador:', error)
+          alert('No se pudo eliminar el administrador. Revisa la consola para más detalles.')
         })
     }
 

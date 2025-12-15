@@ -34,7 +34,7 @@
       <a class="sidebar-link" @click="home()">Inicio</a>
       <a class="sidebar-link" @click="container()">Contenedores</a>
       <a class="sidebar-link" @click="users()">Conductores</a>
-      <a class="sidebar-link" @click="admins()">Admins</a>
+      <a class="sidebar-link" @click="admins()">Adminstradores</a>
       <a class="sidebar-link" @click="centrals()">Centrales</a>
       <a class="sidebar-link" @click="rutas()">Rutas</a>
     </nav>

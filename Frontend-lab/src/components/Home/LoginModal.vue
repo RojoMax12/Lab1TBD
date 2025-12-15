@@ -154,7 +154,7 @@ async function handleLogin() {
     passwordError.value = ''
   } catch (err) {
     console.error('Error al iniciar sesión:', err)
-    passwordError.value = 'Credenciales inválidas o error del servidor.'
+    passwordError.value = 'Usuario o contraseña inválidos.'
   }
 }
 

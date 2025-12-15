@@ -152,14 +152,20 @@ export default {
         })
     }
 
-    // Eliminar conductor
+    // Eliminar conductor (con confirmación)
     const eliminarConductor = (id) => {
+      if (!id) return
+      const confirmMsg = '¿Confirma que desea eliminar al conductor #' + id + '? Esta acción no se puede deshacer.'
+      if (!confirm(confirmMsg)) return
+
       DriverServices.deleteDriver(id)
         .then(() => {
           obtenerConductores()
+          alert('Conductor eliminado correctamente')
         })
         .catch((error) => {
           console.error('Error al eliminar conductor:', error)
+          alert('No se pudo eliminar el conductor. Revisa la consola para más detalles.')
         })
     }
 
