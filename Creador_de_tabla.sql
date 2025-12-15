@@ -1,3 +1,4 @@
+
 CREATE TABLE central (
                          id BIGSERIAL PRIMARY KEY,
                          name VARCHAR(100) NOT NULL,
@@ -92,7 +93,11 @@ INSERT INTO container (id_waste, coord_x, coord_y, weight, status) VALUES
 -- Conductores
 INSERT INTO driver (name, last_name, email, password, role) VALUES
                                                           ('Juan', 'Pérez', 'juan.perez@mail.com', '1234', 'driver'),
-                                                          ('Ana', 'Gómez', 'ana.gomez@mail.com', 'abcd', 'driver');
+                                                          ('Ana', 'Gómez', 'ana.gomez@mail.com', 'abcd', 'driver'),
+                                                        ('Pedro', 'Ramírez', 'pedro.ramirez@mail.com', '1234', 'driver'),
+                                                        ('Lucía', 'Torres', 'lucia.torres@mail.com', '1234', 'driver'),
+                                                        ('Mario', 'Soto', 'mario.soto@mail.com', '1234', 'driver'),
+                                                        ('Elena', 'Castro', 'elena.castro@mail.com', '1234', 'driver');
 
 -- Administradores
 INSERT INTO admin (name, last_name, email, password, role) VALUES
@@ -120,7 +125,17 @@ INSERT INTO route (id_driver, date_, start_time, end_time, route_status, id_cent
                                                                                                            (1, '2025-10-20', '07:00:00', '11:00:00', 'Finalizada', 1, 2),   -- 4h
                                                                                                            (2, '2025-10-20', '08:30:00', '12:30:00', 'Finalizada', 2, 1),   -- 4h
                                                                                                            (1, '2025-10-20', '06:00:00', '09:30:00', 'Finalizada', 1, 1),   -- 3.5h
-                                                                                                           (2, '2025-10-20', '05:45:00', '09:15:00', 'Finalizada', 2, 2);   -- 3.5h
+                                                                                                           (2, '2025-10-20', '05:45:00', '09:15:00', 'Finalizada', 2, 2),
+                                                                                                           (1, '2025-11-01', '07:00', '09:00', 'Finalizada', 1, 2),
+                                                                                                            (2, '2025-11-02', '08:00', '10:00', 'Finalizada', 1, 2),
+                                                                                                            (3, '2025-11-03', '09:00', '11:00', 'Finalizada', 1, 2),
+                                                                                                            (4, '2025-11-04', '10:00', '12:00', 'Finalizada', 1, 2),
+                                                                                                            (5, '2025-11-05', '07:00', '09:00', 'Finalizada', 1, 2),
+                                                                                                            (6, '2025-11-06', '08:00', '10:00', 'Finalizada', 1, 2),
+                                                                                                            (3, '2025-11-01', '07:00:00', '09:00:00', 'Finalizada', 1, 2),
+                                                                                                            (4, '2025-11-02', '08:00:00', '10:00:00', 'Finalizada', 2, 1),
+                                                                                                            (5, '2025-11-03', '06:30:00', '09:00:00', 'Finalizada', 1, 2),
+                                                                                                            (6, '2025-11-04', '07:15:00', '09:45:00', 'Finalizada', 2, 1); -- 3.5h
 
 -- Pickup
 INSERT INTO pickup (id_container, id_route, date_hour) VALUES
@@ -192,7 +207,21 @@ INSERT INTO pickup (id_container, id_route, date_hour) VALUES
                                                            (3,19,'2025-10-20 09:00:00'),
                                                            (1,20,'2025-10-20 06:00:00'),
                                                            (2,20,'2025-10-20 07:30:00'),
-                                                           (3,20,'2025-10-20 09:00:00');
+                                                           (3,20,'2025-10-20 09:00:00'),
+                                                           (1, 2, '2025-09-15 09:00:00'),
+                                                            (2, 3, '2025-09-18 10:00:00'),
+                                                            (3, 4, '2025-08-20 11:00:00'),
+                                                            (1, 5, '2025-11-02 07:00:00'),
+                                                            (1, 21, '2025-11-01 07:30:00'), -- ruta de Pedro
+                                                            (1, 22, '2025-11-02 08:30:00'), -- ruta de Lucía
+                                                            (1, 23, '2025-11-03 07:45:00'), -- ruta de Mario
+                                                            (1, 24, '2025-11-04 08:15:00'),
+                                                            (2, 21, '2025-11-01 07:40:00'),
+                                                            (2, 22, '2025-11-02 08:50:00'),
+                                                            (3, 21, '2025-11-01 07:50:00'),
+                                                            (3, 22, '2025-11-02 09:00:00'),
+                                                            (3, 23, '2025-11-03 08:00:00'); -- ruta de Elena -- driver 5
+
 
 
 INSERT INTO route_container (id_route, id_container) VALUES
@@ -392,6 +421,32 @@ GROUP BY fecha
 ORDER BY fecha;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_peso_recolectado_diario_fecha ON peso_recolectado_diario (fecha);
+
+
+-- =========================================================
+-- FUNCIÓN DEL TRIGGER: Actualiza el estado del contenedor
+-- =========================================================
+CREATE OR REPLACE FUNCTION actualizar_estado_contenedor_func()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Actualiza el estado del contenedor a 'Recogido' (o similar)
+    -- usando el ID del contenedor insertado en la tabla pickup (NEW.id_container)
+    UPDATE container
+    SET status = 'Recogido' -- O 'Vaciado' / 'En tránsito', según la lógica
+    WHERE id = NEW.id_container;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- =========================================================
+-- TRIGGER: Se dispara después de una inserción en 'pickup'
+-- =========================================================
+CREATE OR REPLACE TRIGGER tr_actualizar_estado_contenedor
+AFTER INSERT ON pickup
+FOR EACH ROW
+EXECUTE FUNCTION actualizar_estado_contenedor_func();
 
 -- =========================================================
 -- ✅ FIN DEL SCRIPT
