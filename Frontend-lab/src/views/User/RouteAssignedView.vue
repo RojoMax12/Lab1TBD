@@ -82,17 +82,42 @@ async function getDriverData(email) {
   }
 }
 
-// Obtener todas las rutas asignadas al conductor logueado
-const getallrouteassigned = (driver) => {
+// Obtener todas las rutas asignadas al conductor logueado (pendientes + ruta en curso)
+const getallrouteassigned = async (driver) => {
   if (!driver || !driver.id) return; // Asegurarnos de que el `driver` tenga un id
-  routeServices.getAllRouterByDriverIdPending(driver.id)
-    .then((data) => {
-      routes.value = data; // Asignamos las rutas obtenidas al arreglo `routes`
-      console.log("Rutas obtenidas para el conductor:", driver.id, routes);
-    })
-    .catch((error) => {
-      console.error("Error al obtener las rutas:", error);
-    });
+
+  try {
+    // 1) Obtener pendientes (lista)
+    const pendingRes = await routeServices.getAllRouterByDriverIdPending(driver.id);
+    const pending = Array.isArray(pendingRes.data) ? pendingRes.data : (pendingRes.data || []);
+
+    // 2) Intentar obtener la ruta en estado 'EnProceso' o 'Tomada' (si existe)
+    const activeStatuses = ['EnProceso', 'En Proceso', 'Tomada'];
+    const activeRoutes = [];
+
+    for (const st of activeStatuses) {
+      try {
+        const r = await routeServices.findRouteByStatusAndIdDriver(driver.id, st);
+        if (r && r.data) {
+          // r may be an axios response with .data or a raw object
+          const routeObj = r.data && typeof r.data === 'object' ? r.data : r;
+          // avoid duplicates
+          if (!pending.some(p => String(p.id) === String(routeObj.id)) && !activeRoutes.some(a => String(a.id) === String(routeObj.id))) {
+            activeRoutes.push(routeObj);
+          }
+        }
+      } catch (err) {
+        // Ignore if not found or other errors for this specific status
+      }
+    }
+
+    // 3) Combinar pendientes + activas para mostrar en la tabla (mantenemos formato axios-like { data: [...] })
+    const combined = [...activeRoutes, ...pending];
+    routes.value = { data: combined };
+    console.log('Rutas obtenidas para el conductor:', driver.id, routes.value);
+  } catch (error) {
+    console.error('Error al obtener las rutas:', error);
+  }
 };
 
 // Comprueba si hay alguna ruta activa en proceso para este conductor
