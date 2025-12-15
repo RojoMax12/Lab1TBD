@@ -18,7 +18,13 @@
       <div class="modal">
         <h2>{{ editando ? 'Editar Contenedor' : 'Nuevo Contenedor' }}</h2>
 
-        <input v-model="nuevoContenedor.id_waste" type="number" placeholder="ID Waste" />
+        <select v-model="nuevoContenedor.id_waste">
+          <option disabled value="">Seleccione tipo de residuo</option>
+          <option v-for="w in wasteTypes" :key="w.id" :value="w.id">
+            {{ w.waste_type }}
+          </option>
+        </select>
+
         <input v-model="nuevoContenedor.coord_x" type="number" placeholder="Coordenada X" />
         <input v-model="nuevoContenedor.coord_y" type="number" placeholder="Coordenada Y" />
         <input v-model="nuevoContenedor.weight" type="number" placeholder="Peso (kg)" />
@@ -196,7 +202,7 @@ import HeaderAdmin from '@/components/Admin/HeaderAdmin.vue'
 import containerServices from '@/services/containerservices'
 import routeServices from '@/services/routeservices'
 import routeContainerServices from '@/services/route_containerservices'
-
+import wasteService from '@/services/wasteservice'
 
 export default {
   name: 'ContainerView',
@@ -214,6 +220,7 @@ export default {
     const contenedoresDeRuta= ref([])
     const analisisdensidad = ref([])
     const rutas = ref([])
+    const wasteTypes = ref([])
 
     const nuevoContenedor = ref({
       id: null,
@@ -319,6 +326,7 @@ export default {
       obtenerContenedoresConProblemas()
       obtenerAnalisisDensidad()
       obtenerRutas()
+      obtenerTiposDeWaste()
     })
 
     // === MODAL NUEVO / EDITAR ===
@@ -334,6 +342,17 @@ export default {
         status: ''
       }
     }
+
+    // Obtener tipos de residuos
+    const obtenerTiposDeWaste = () => {
+      wasteService.getAllWaste()
+        .then(response => {
+          wasteTypes.value = response.data;
+        })
+        .catch(error => {
+          console.error("Error al obtener tipos de residuos:", error);
+        });
+    };
 
     const abrirModalEditar = (contenedor) => {
       editando.value = true
@@ -441,7 +460,8 @@ export default {
       eliminarContenedor,
       cerrarModal,
       contenedoresDeRuta,
-      cargarContenedoresDeRuta
+      cargarContenedoresDeRuta,
+      wasteTypes
     }
   }
 }
@@ -643,57 +663,97 @@ export default {
   cursor: pointer;
 }
 
-/* Modal */
+/* === MODAL MODERNO === */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.4);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
 }
 
 .modal {
-  background: rgb(255, 255, 255);
-  padding: 25px;
-  width: 380px;
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
-  color: #000000;
+  background: #fff;
+  padding: 30px 35px;
+  width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
   text-align: center;
+  animation: fadeIn 0.3s ease;
 }
 
-.modal input, .modal select {
+.modal h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #4a4f37;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e2e6d5;
+  padding-bottom: 8px;
+}
+
+.modal input,
+.modal select {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
   border: 1px solid #ccc;
+  background: #fafafa;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.modal input:focus,
+.modal select:focus {
+  outline: none;
+  border-color: #4a4f37;
+  background: #fff;
 }
 
 .modal-buttons {
   display: flex;
   justify-content: space-between;
+  margin-top: 15px;
+}
+
+.btn-save,
+.btn-cancel {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .btn-save {
   background: #4a4f37;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 25px;
-  border: none;
+  color: #fff;
+}
+.btn-save:hover {
+  background: #3a3e2d;
 }
 
 .btn-cancel {
   background: #d1655d;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 25px;
-  border: none;
+  color: #fff;
+}
+.btn-cancel:hover {
+  background: #b84e47;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .scrollable-table {
