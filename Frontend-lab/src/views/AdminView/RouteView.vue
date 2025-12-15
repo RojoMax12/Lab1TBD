@@ -185,14 +185,13 @@ import driverServices from '@/services/driverservices'
 import centralServices from '@/services/centralservices'
 import containerServices from '@/services/containerservices'
 import routeServices from '@/services/routeservices'
-import pickUpServices from '@/services/pickupservices'
 import routeContainerServices from '@/services/route_containerservices'
 /* MODAL */
 const mostrarModal = ref(false)
 const contenedores = ref([])
 const drivers = ref([])
 const centrales = ref([])
-const puntosRetiro = ref([])
+const central = ref("")
 
 /* RUTAS PLANIFICADAS */
 const rutas = ref([])
@@ -242,9 +241,6 @@ function guardarRuta() {
     return
   }
 
-  // Imprimir los datos capturados en el formulario para verificar
-  console.log("Datos de la nueva ruta a guardar:", nuevaRuta.value);
-  console.log("Contenedores seleccionados:", contenedoresSeleccionados.value);
 
   // Construir el payload para enviar al backend
   const payload = {
@@ -257,13 +253,11 @@ function guardarRuta() {
     endTime: nuevaRuta.value.end_time
   };
 
-  console.log("Payload enviado al backend:", payload);
 
   // Llamar al servicio para crear la ruta
   routeServices.createroute(payload)
     .then(res => {
-      // Si la creación fue exitosa, mostramos la respuesta
-      console.log("Respuesta de la API:", res);
+
 
       // Refrescamos la lista de rutas planificadas
       fetchRutas();
@@ -338,7 +332,7 @@ async function fetchRutas() {
 
           return { ...ruta, contenedores };
         } catch (err) {
-          console.error(`No se pudieron cargar contenedores de la ruta ${ruta.id}`, err);
+          console.error("No se pudieron cargar contenedores de la ruta ${ruta.id}, err");
           return { ...ruta, contenedores: [] };
         }
       })
@@ -393,6 +387,7 @@ function getNameCentralById(id) {
 }
 
 
+
 async function fetchDrivers() {
   try {
     const res = await driverServices.getAllDrivers()
@@ -423,16 +418,23 @@ async function fetchCentrales() {
   }
 }
 
-async function fetchPuntosRetiro() {
+async function fetchCentralesId(idcentral, route) {
   try {
-    const res = await pickUpServices.getAllPickUp()
-    puntosRetiro.value = Array.isArray(res) ? res : (res.data || [])
-    console.log("estos son los puntos de retiro", puntosRetiro.value)
+    const res = await centralServices.getCentralById(idcentral);
+    if (res && res.data) {
+      // Asignar el nombre de la central a la propiedad de la ruta correspondiente
+      route.central_name = res.data.name;
+      console.log('Central Name:', route.central_name);
+    } else {
+      console.error('No se encontró la central con ID:', idcentral);
+    }
   } catch (e) {
-    console.warn('Could not load pick up points via service:', e)
-    puntosRetiro.value = []
+    console.warn('Could not load central:', e);
+    route.central_name = 'Central no disponible';
   }
 }
+
+
 
 async function fetchRutasIneficientes() {
   try {
@@ -449,7 +451,6 @@ onMounted(() => {
   fetchDrivers()
   fetchContenedores()
   fetchCentrales()
-  fetchPuntosRetiro()
 })
 
 

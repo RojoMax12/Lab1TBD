@@ -1,28 +1,23 @@
 <template>
   <div class="container">
-    <!-- Mapa -->
     <div class="map-container">
       <img src="/Mapa-ruta.png" alt="Mapa de ruta" />
     </div>
 
-    <!-- Panel de información -->
     <div class="info-wrapper">
       <button class="info-button" @click="routeAssigned">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;">
-          <circle cx="11" cy="11" r="10" stroke="#ffffff" stroke-width="2"/>
-          <path d="M7 11h8m0 0l-3-3m3 3l-3 3" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
         Rutas asignadas
       </button>
 
       <div class="info-panel">
         <div class="info-title">
-            <h2>Ruta actual </h2>
+          <h2>Ruta actual</h2>
         </div>
+        
         <div class="grid">
           <div>
             <span class="label">Fecha - hora</span>
-            <input class="value-input" readonly v-model="routeactual.date" />
+            <input class="value-input" readonly :value="routeactual.date + ' / ' + routeactual.start_time" />
           </div>
           <div>
             <span class="label">Estado ruta</span>
@@ -30,57 +25,102 @@
           </div>
           <div>
             <span class="label">Central inicio</span>
-            <input class="value-input" readonly v-model="routeactual.id_central" />
+            <input class="value-input" readonly :value="centralStart?.name || 'Cargando...'" />
           </div>
           <div>
             <span class="label">Central fin</span>
-            <input class="value-input" readonly v-model="routeactual.id_central_finish" />
+            <input class="value-input" readonly :value="centralFinish?.name || 'Cargando...'" />
           </div>
           <div>
-            <span class="label">Coordenada inicio</span>
-            <input class="value-input" readonly v-model="routeactual.start_coords" />
+            <span class="label">Coord. inicio</span>
+            <input 
+              class="value-input" 
+              readonly 
+              :value="`${centralStart?.coord_x || 'N/A'}, ${centralStart?.coord_y || 'N/A'}`" 
+            />
           </div>
           <div>
-            <span class="label">Coordenada fin</span>
-            <input class="value-input" readonly v-model="routeactual.end_coords" />
+            <span class="label">Coord. fin</span>
+            <input 
+              class="value-input" 
+              readonly 
+              :value="`${centralFinish?.coord_x || 'N/A'}, ${centralFinish?.coord_y || 'N/A'}`" 
+            />
           </div>
         </div>
 
         <div class="full-width-box">
-          <span class="label">Punto siguiente</span>
-          <input class="value-input" readonly v-model="routeactual.next_point" />
+          <span class="label">Punto siguiente (Coordenadas)</span>
+          <input 
+            class="value-input" 
+            readonly 
+            :value="containersData[0]?.coord_x + ' , ' + containersData[0]?.coord_y|| 'No asignado'" 
+          />
         </div>
+        
         <div class="full-width-box">
           <span class="label">Tipo de residuo</span>
-          <input class="value-input" readonly v-model="routeactual.waste_type" />
+          <input 
+            class="value-input" 
+            readonly 
+            :value="wastesData[0]?.waste_type || 'N/A'" 
+          />
+        </div>
+        
+        <div class="controls-container">
+          <button class="nextpoint" @click="handleNextPoint">
+            Siguiente punto
+          </button>
+          <button class="routefinish" @click="complete(routeactual)">
+            Ruta completada
+          </button>
         </div>
       </div>
     </div>
   </div>
 </template>
 
+
+
+
 <script setup>
 import { ref, onMounted } from 'vue';
+import { jwtDecode } from "jwt-decode";
 import { useRouter } from 'vue-router';
+// Asume que las rutas de los servicios son correctas
 import DriverServices from '@/services/driverservices';
 import RouteServices from '@/services/routeservices';
-import { jwtDecode } from "jwt-decode";
+import centralServices from '@/services/centralservices';
+import RouteContainer from '@/services/route_containerservices';
+import ContainerServices from '@/services/containerservices';
+import WasteServices from '@/services/wasteservices';
 
-const router = useRouter();
 
+// Referencias reactivas
+const routeactual = ref({
+  id_route: null,
+  date: 'N/A',
+  route_status: 'Pendiente',
+  id_central: null,
+  id_central_finish: null,
+  start_time: 'N/A',
+  end_time: 'N/A',
+  next_point: 'N/A', 
+});
+
+// Inicialización como objetos vacíos para evitar errores de acceso a propiedades
+const centralStart = ref({}); 
+const centralFinish = ref({}); 
+const routecontainers = ref([]); // Lista de la tabla de unión
+const containersData = ref([]); // Lista de objetos contenedor
+const wastesData = ref([]);   // Lista de objetos waste (residuos)
+
+// Datos del conductor
 const name = ref('');
 const lastname = ref('');
 const userEmail = ref('');
-const routeactual = ref({
-  date: '',
-  route_status: '',
-  id_central: '',
-  id_central_finish: '',
-  start_coords: '',
-  end_coords: '',
-  next_point: '',
-  waste_type: ''
-});
+const router = useRouter();
+
 
 onMounted(() => {
   const token = localStorage.getItem('jwt');
@@ -88,9 +128,7 @@ onMounted(() => {
 
   try {
     const decoded = jwtDecode(token);
-    console.log("TOKEN DECODIFICADO:", decoded);
     userEmail.value = decoded.sub || decoded.email || null;
-
     if (userEmail.value) {
       getDriverData(userEmail.value);
     }
@@ -99,59 +137,138 @@ onMounted(() => {
   }
 });
 
+
+// Obtener datos del conductor
 async function getDriverData(email) {
   try {
-    console.log("Obteniendo driver con email:", email);
     const response = await DriverServices.getDriverByEmail(email);
-
-    // Asignar datos al conductor
     const driver = response.data;
-    console.log("Datos del driver:", driver);
     name.value = driver.name;
     lastname.value = driver.last_name;
-
     if (driver.id) {
-      // Obtener ruta asignada en "En Proceso"
-      getactualroute(driver.id);
+      getactualroute(driver.id); 
     }
   } catch (err) {
-    console.error("Error obteniendo admin:", err);
+    console.error("Error obteniendo datos del conductor:", err);
   }
 }
 
+// Obtener ruta actual
 async function getactualroute(driverId) {
   try {
     const response = await RouteServices.findRouteByStatusAndIdDriver(driverId, 'EnProceso');
-    console.log("Response data:", response.data);
     
-    // Verificar si hay datos
-    if (response.data) {
-      const route = response.data; // Suponiendo que solo hay una ruta en proceso
-
-      // Asegurarse de que las propiedades existen antes de asignarlas
-      routeactual.value.date = route.start_time || 'No disponible';  // O usar otro formato de fecha si es necesario
-      routeactual.value.route_status = route.route_status || 'No disponible';
-      routeactual.value.id_central = route.id_central || 'No disponible';
-      routeactual.value.id_central_finish = route.id_central_finish || 'No disponible';
-      routeactual.value.start_coords = route.start_time ? `${route.start_coords_x}, ${route.start_coords_y}` : 'No disponible';
-      routeactual.value.end_coords = route.end_time ? `${route.end_coords_x}, ${route.end_coords_y}` : 'No disponible';
-      routeactual.value.next_point = route.next_point || 'No disponible';
-      routeactual.value.waste_type = route.waste_type || 'No disponible';
-
-    } else {
-      console.error("No se encontró una ruta en proceso para este conductor.");
+    if (!response.data) {
+      console.log("No se encontró una ruta en proceso para este conductor.");
+      routeactual.value.route_status = 'Sin Ruta';
+      return; 
     }
+    
+    const route = Array.isArray(response.data) ? response.data[0] : response.data;
+
+    // Asignación de propiedades
+    routeactual.value = {
+      id_route: route.id,
+      date: route.date_,
+      route_status: route.route_status,
+      id_central: route.id_central,
+      id_central_finish: route.id_central_finish,
+      start_time: route.start_time,
+      end_time: route.end_time,
+      next_point: route.next_point || 'N/A', 
+    };
+
+    // Obtener las centrales de inicio y fin y los contenedores concurrentemente
+    await Promise.all([
+      fetchCentralesId(route.id_central, route.id_central_finish),
+      fetchContainerRoute(route.id) 
+    ]);
+
   } catch (error) {
     console.error("Error al obtener la ruta en proceso:", error);
   }
 }
 
+// Función para obtener las centrales por su ID
+async function fetchCentralesId(idcentralStart, idcentralFinish) {
+  try {
+    const [resStart, resFinish] = await Promise.all([
+      centralServices.getCentralById(idcentralStart),
+      centralServices.getCentralById(idcentralFinish)
+    ]);
+    
+    centralStart.value = resStart.data;
+    centralFinish.value = resFinish.data;
+  } catch (e) {
+    console.warn('Error al cargar las centrales:', e);
+    centralStart.value = { name: 'Error' };
+    centralFinish.value = { name: 'Error' };
+  }
+}
+
+// Función para obtener los contenedores y wastes de la ruta
+async function fetchContainerRoute(routeId) {
+  if (!routeId) return;
+
+  try {
+    const resRouteContainers = await RouteContainer.getRouteContainersByRoute(routeId);
+    routecontainers.value = resRouteContainers.data;
+
+    // Mapear y crear promesas para obtener cada contenedor y su waste asociado
+    const containerPromises = routecontainers.value.map(async (rc) => {
+      const resContainer = await ContainerServices.getContainerById(rc.id_container);
+      const container = resContainer.data;
+      console.log(container)
+      
+      let waste = null;
+      if (container?.id_waste) {
+        const resWaste = await WasteServices.getWasteById(container.id_waste);
+        waste = resWaste.data;
+      }
+      return { container, waste };
+    });
+
+    const results = await Promise.all(containerPromises);
+    
+    containersData.value = results.map(r => r.container).filter(c => c);
+    wastesData.value = results.map(r => r.waste).filter(w => w);
+
+  } catch (error) {
+    console.error("Error al obtener contenedores y wastes de la ruta:", error);
+  }
+}
 
 
+// Función para completar la ruta
+function complete(routeactual) {
+  if (routeactual && routeactual.id_route) {
+    RouteServices.updateRouteStatus(routeactual.id_route, "Finalizada")
+      .then(() => {
+        alert("Ruta marcada como 'Finalizada' exitosamente.");
+        routeactual.route_status = "Finalizada"; 
+      })
+      .catch(error => {
+        console.error("Error al actualizar la ruta:", error);
+        alert("Error al finalizar la ruta.");
+      });
+  } else {
+    console.error("La ruta no tiene un ID válido.");
+  }
+}
+
+// Función placeholder para el siguiente punto
+function handleNextPoint() {
+    alert("Función 'Siguiente punto' no implementada. Se debe actualizar el estado del contenedor actual y avanzar al siguiente punto en la base de datos.");
+    // Aquí iría la lógica para: 
+    // 1. Llamar a la API para actualizar el estado del contenedor actual (Ej: "Vaciado").
+    // 2. Llamar a la 
+    // API para actualizar `routeactual.next_point` al ID/coordenada del siguiente contenedor.
+}
 
 function routeAssigned() {
-  router.push({ name: 'route-assigned' }); // Redirige a la vista de ruta asignada
+  router.push({ name: 'route-assigned' })
 }
+
 </script>
 
 <style scoped>
@@ -312,6 +429,35 @@ function routeAssigned() {
   font-size: 1rem;
   box-shadow: 0 2px 8px rgba(78,83,54,0.08);
 }
+
+.routefinish {
+  color:white;
+  background: linear-gradient(180deg,#5e6541,#52563f);
+  padding: 1rem;
+  border-radius: 1rem;
+  margin-left: 5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(94,101,65,0.10);
+  transition: background 0.18s, box-shadow 0.18s;
+  outline: none;
+  border: none;
+}
+
+.nextpoint {
+  color:white;
+  background: linear-gradient(180deg,#5e6541,#52563f);
+  padding: 1rem;
+  border-radius: 1rem;
+  margin-left: 5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(94,101,65,0.10);
+  transition: background 0.18s, box-shadow 0.18s;
+  outline: none;  
+  border: none;
+
+}
+
+
 
 @media (max-width: 900px) {
   .container {
