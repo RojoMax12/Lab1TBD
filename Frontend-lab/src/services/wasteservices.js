@@ -8,7 +8,7 @@ export default {
 
   // Obtener todos los Wastes
   getAllWastes() {
-    return api.get('/api/waste')
+    return api.get('/api/waste/')
   },
 
   // Obtener un Waste por ID

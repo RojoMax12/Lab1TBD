@@ -13,11 +13,25 @@
 
     </div>
 
-    <!-- MODAL PARA AGREGAR/EDITAR CONTENEDOR -->
     <div v-if="mostrarModal" class="modal-overlay" @click.self="cerrarModal">
-      <div class="modal">
+    <div class="modal">
         <h2>{{ editando ? 'Editar Contenedor' : 'Nuevo Contenedor' }}</h2>
+        
+        <div class="form-group">
+            <label for="waste-type">Tipo de residuo</label>
+            <select v-model="nuevoContenedor.id_waste" id="waste-type">
+                <option value="" disabled>Seleccione un tipo de residuo</option>
+                <option 
+                    v-for="waste in wastes"
+                    :key="waste.id"
+                    :value="waste.id"
+                >
+                    {{ waste.waste_type || `ID ${waste.id}` }} 
+                </option>
+                </select>
+        </div>
 
+<<<<<<< Updated upstream
         <select v-model="nuevoContenedor.id_waste">
           <option disabled value="">Seleccione tipo de residuo</option>
           <option v-for="w in wasteTypes" :key="w.id" :value="w.id">
@@ -28,22 +42,41 @@
         <input v-model="nuevoContenedor.coord_x" type="number" placeholder="Coordenada X" />
         <input v-model="nuevoContenedor.coord_y" type="number" placeholder="Coordenada Y" />
         <input v-model="nuevoContenedor.weight" type="number" placeholder="Peso (kg)" />
+=======
+        <div class="form-group">
+            <label for="coord-x">Coordenada X</label>
+            <input v-model="nuevoContenedor.coord_x" type="number" id="coord-x" placeholder="Ej: -33.456" />
+        </div>
+>>>>>>> Stashed changes
 
-        <select v-model="nuevoContenedor.status">
-          <option value="">Seleccione estado</option>
-          <option value="Disponible">Disponible</option>
-          <option value="Lleno">Lleno</option>
-          <option value="En mantenimiento">En mantenimiento</option>
-        </select>
+        <div class="form-group">
+            <label for="coord-y">Coordenada Y</label>
+            <input v-model="nuevoContenedor.coord_y" type="number" id="coord-y" placeholder="Ej: -70.678" />
+        </div>
+
+        <div class="form-group">
+            <label for="weight">Peso (kg)</label>
+            <input v-model="nuevoContenedor.weight" type="number" id="weight" placeholder="Ej: 500" />
+        </div>
+
+        <div class="form-group">
+            <label for="status">Estado del Contenedor</label>
+            <select v-model="nuevoContenedor.status" id="status">
+                <option value="" disabled>Seleccione estado</option>
+                <option value="Disponible">Disponible</option>
+                <option value="Lleno">Lleno</option>
+                <option value="En mantenimiento">En mantenimiento</option>
+            </select>
+        </div>
 
         <div class="modal-buttons">
-          <button class="btn-save" @click="editando ? actualizarContenedor() : guardarContenedor()">
-            {{ editando ? 'Actualizar' : 'Guardar' }}
-          </button>
-          <button class="btn-cancel" @click="cerrarModal">Cancelar</button>
+            <button class="btn-save" @click="editando ? actualizarContenedor() : guardarContenedor()">
+                {{ editando ? 'Actualizar' : 'Guardar' }}
+            </button>
+            <button class="btn-cancel" @click="cerrarModal">Cancelar</button>
         </div>
-      </div>
     </div>
+</div>
 
     <!--Modal para actualización masiva de pesos de contenedores-->
     <div v-if="mostrarModalMasivo" class="modal-overlay" @click.self="cerrarModalMasivo">
@@ -202,7 +235,12 @@ import HeaderAdmin from '@/components/Admin/HeaderAdmin.vue'
 import containerServices from '@/services/containerservices'
 import routeServices from '@/services/routeservices'
 import routeContainerServices from '@/services/route_containerservices'
+<<<<<<< Updated upstream
 import wasteService from '@/services/wasteservice'
+=======
+import wasteServices from '@/services/wasteservices'
+
+>>>>>>> Stashed changes
 
 export default {
   name: 'ContainerView',
@@ -220,7 +258,11 @@ export default {
     const contenedoresDeRuta= ref([])
     const analisisdensidad = ref([])
     const rutas = ref([])
+<<<<<<< Updated upstream
     const wasteTypes = ref([])
+=======
+    const wastes = ref([])
+>>>>>>> Stashed changes
 
     const nuevoContenedor = ref({
       id: null,
@@ -326,7 +368,11 @@ export default {
       obtenerContenedoresConProblemas()
       obtenerAnalisisDensidad()
       obtenerRutas()
+<<<<<<< Updated upstream
       obtenerTiposDeWaste()
+=======
+      fetchWastes()
+>>>>>>> Stashed changes
     })
 
     // === MODAL NUEVO / EDITAR ===
@@ -435,6 +481,23 @@ export default {
       }
     }
 
+    const fetchWastes = async () => {
+      try {
+
+        const res = await wasteServices.getAllWastes();
+    
+        // **Corregido:** Asigna la lista de objetos de residuo (waste objects)
+        wastes.value = Array.isArray(res) ? res : (res.data || []); 
+    
+        console.log('Residuos cargados con éxito:', wastes.value);
+
+      } catch (e) {
+        // 3. Manejo de errores
+        console.error('Error al cargar los tipos de residuos:', e);
+        wastes.value = []; // Limpia la lista en caso de fallo
+      }
+    };
+
     return {
       mostrarModal,
       editando,
@@ -461,7 +524,12 @@ export default {
       cerrarModal,
       contenedoresDeRuta,
       cargarContenedoresDeRuta,
+<<<<<<< Updated upstream
       wasteTypes
+=======
+      fetchWastes,
+      wastes
+>>>>>>> Stashed changes
     }
   }
 }

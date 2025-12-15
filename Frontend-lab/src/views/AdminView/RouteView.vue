@@ -400,11 +400,20 @@ async function fetchDrivers() {
 
 async function fetchContenedores() {
   try {
-    const res = await containerServices.getAllContainers()
-    contenedores.value = Array.isArray(res) ? res : (res.data || [])
+    const res = await containerServices.getAllContainers();
+    
+    // 1. Obtener la lista base (manejo de casos Array o { data: Array })
+    const allContenedores = Array.isArray(res) ? res : (res.data || []);
+
+    const contenedoresDisponibles = allContenedores.filter(contenedor => {
+      return contenedor.status === "Disponible"; 
+    });
+
+    contenedores.value = contenedoresDisponibles;
+
   } catch (e) {
-    console.warn('Could not load contenedores:', e)
-    contenedores.value = []
+    console.warn('Could not load contenedores:', e);
+    contenedores.value = [];
   }
 }
 

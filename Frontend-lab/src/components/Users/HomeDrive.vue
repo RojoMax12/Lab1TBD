@@ -33,7 +33,6 @@
         <a href="#" class="sidebar-link" @click="home">Inicio </a>
         <a href="#" class="sidebar-link" @click="routeAssigned"> Rutas asignadas</a>
         <a href="#" class="sidebar-link" @click="routeTaken"> Rutas realizadas</a>
-        <a href="#" class="sidebar-link">Perfil</a>
       </nav>
     </aside>
     <div v-if="showSidebar" class="sidebar-backdrop" @click="showSidebar = false"></div>
