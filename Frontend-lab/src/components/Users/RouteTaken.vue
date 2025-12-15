@@ -124,21 +124,28 @@ const getallrouteassigned = (driver) => {
   routeServices.getAllRouterByDriverIdFinish(driver.id)
     .then((data) => {
       console.log("Datos recibidos del servicio:", data);
-      routes.value = data || [];  // Asegurarse de que 'data' no sea undefined
-      console.log("Rutas obtenidas para el conductor:", driver.id, routes.value);
+      // data puede venir como respuesta axios (data.data) o como array directo
+      const arr = Array.isArray(data && data.data) ? data.data : (Array.isArray(data) ? data : (data && Array.isArray(data) ? data : []));
 
-      // Verifica si las rutas tienen los datos correctos antes de asignarlos
-      if (routes.value && routes.value.length > 0) {
-        routes.value.forEach(route => {
-          // Asegúrate de que los campos sean válidos
-          console.log("a", route);  // Verifica si la ruta tiene la propiedad 'date_'
-          route.date_ = route.date_ || 'Fecha no disponible';
-          route.start_time = route.start_time || 'Hora no disponible';
-          route.end_time = route.end_time || 'Hora no disponible';
-          route.id_central = route.id_central || 'No disponible';
-          route.id_central_finish = route.id_central_finish || 'No disponible';
-        });
-      }
+      // Normalizar y asegurar campos por cada ruta
+      arr.forEach(route => {
+        route.date_ = route.date_ || 'Fecha no disponible';
+        route.start_time = route.start_time || 'Hora no disponible';
+        route.end_time = route.end_time || 'Hora no disponible';
+        route.id_central = route.id_central || null;
+        route.id_central_finish = route.id_central_finish || null;
+      });
+
+      // Ordenar descendente por id (nuevas primero)
+      arr.sort((a, b) => {
+        const idA = a && a.id != null ? Number(a.id) : -Infinity;
+        const idB = b && b.id != null ? Number(b.id) : -Infinity;
+        return idB - idA;
+      });
+
+      // Guardar en la forma que usa la plantilla (routes.data)
+      routes.value = { data: arr };
+      console.log("Rutas obtenidas para el conductor:", driver.id, routes.value);
     })
     .catch((error) => {
       console.error("Error al obtener las rutas:", error);
