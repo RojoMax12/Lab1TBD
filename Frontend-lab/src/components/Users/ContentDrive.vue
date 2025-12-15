@@ -1,7 +1,26 @@
 <template>
   <div class="container">
     <div class="map-container">
-      <img src="/Mapa-ruta.png" alt="Mapa de ruta" />
+      <div class="map-inner">
+        <img class="map-image" src="/Mapa-ruta.png" alt="Mapa de ruta" />
+
+        <!-- SVG overlay for lines connecting markers -->
+        <svg class="map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <!-- line connecting only containers (solid/highlight) -->
+          <polyline :points="polylineContainersPoints" class="overlay-line-containers" />
+          <!-- full route line (start -> containers -> finish) dashed -->
+          <polyline :points="polylinePoints" class="overlay-line" />
+        </svg>
+
+        <!-- Markers for containers (positioned over the image) -->
+     <div v-for="m in markers" :key="m.id" 
+       class="marker" 
+       :class="[ { next: routeactual.next_point && String(routeactual.next_point.id) === String(m.id) }, m.type ]"
+       :style="{ left: m.left, top: m.top }"
+       @click="handleMarkerClick(m)">
+          <span class="marker-label">{{ m.label }}</span>
+        </div>
+      </div>
     </div>
 
     <div class="info-wrapper">
@@ -85,6 +104,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { watch } from 'vue';
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from 'vue-router';
 // Asume que las rutas de los servicios son correctas
@@ -116,6 +136,9 @@ const routecontainers = ref([]); // Lista de la tabla de unión
 const containersData = ref([]); // Lista de objetos contenedor
 const wastesData = ref([]);   // Lista de objetos waste (residuos)
 const processingNext = ref(false);
+const markers = ref([]); // marcadores para mostrar en el mapa
+const polylinePoints = ref(''); // cadena de puntos para polyline SVG (inicio->contenedores->fin)
+const polylineContainersPoints = ref(''); // cadena de puntos para polyline que conecta solo contenedores
 
 // Datos del conductor
 const name = ref('');
@@ -228,14 +251,116 @@ async function fetchContainerRoute(routeId) {
       return { container, waste };
     });
 
-    const results = await Promise.all(containerPromises);
+  const results = await Promise.all(containerPromises);
     
-    containersData.value = results.map(r => r.container).filter(c => c);
-    wastesData.value = results.map(r => r.waste).filter(w => w);
+  containersData.value = results.map(r => r.container).filter(c => c);
+  wastesData.value = results.map(r => r.waste).filter(w => w);
+  // Recalcular marcadores para la superposición del mapa
+  computeMarkers();
 
   } catch (error) {
     console.error("Error al obtener contenedores y wastes de la ruta:", error);
   }
+}
+
+// Calcular posiciones de marcadores (porcentajes) a partir de containersData y centrales
+function computeMarkers() {
+  // Preparar puntos: incluir contenedores y opcionalmente centrales para escala
+  const points = [];
+  containersData.value.forEach(c => {
+    if (c && c.coord_x != null && c.coord_y != null) points.push({ id: c.id, x: Number(c.coord_x), y: Number(c.coord_y), label: c.id });
+  });
+  if (centralStart.value && centralStart.value.coord_x != null && centralStart.value.coord_y != null) {
+    points.push({ id: 'start', x: Number(centralStart.value.coord_x), y: Number(centralStart.value.coord_y), label: 'I' });
+  }
+  if (centralFinish.value && centralFinish.value.coord_x != null && centralFinish.value.coord_y != null) {
+    points.push({ id: 'finish', x: Number(centralFinish.value.coord_x), y: Number(centralFinish.value.coord_y), label: 'F' });
+  }
+
+  if (points.length === 0) {
+    markers.value = [];
+    return;
+  }
+
+  const xs = points.map(p => p.x);
+  const ys = points.map(p => p.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const widthRange = (maxX - minX) || 1;
+  const heightRange = (maxY - minY) || 1;
+
+  // Construir lista ordenada: inicio -> contenedores (orden de routecontainers) -> fin
+  const containerById = {};
+  containersData.value.forEach(c => { containerById[String(c.id)] = c; });
+
+  const ordered = [];
+  // añadir central de inicio si está presente
+  if (centralStart.value && centralStart.value.coord_x != null && centralStart.value.coord_y != null) {
+    ordered.push({ type: 'start', id: 'start', x: Number(centralStart.value.coord_x), y: Number(centralStart.value.coord_y), label: 'I', raw: centralStart.value });
+  }
+
+  // añadir contenedores en orden de routecontainers si está disponible, de lo contrario usar el orden de containersData
+  if (routecontainers.value && routecontainers.value.length > 0) {
+    routecontainers.value.forEach((rc, idx) => {
+      const c = containerById[String(rc.id_container)];
+      if (c) ordered.push({ type: 'container', id: c.id, x: Number(c.coord_x), y: Number(c.coord_y), label: ordered.length + 1, raw: c });
+    });
+    // incluir contenedores que no estén en routecontainers al final
+    containersData.value.forEach(c => {
+      if (!ordered.some(o => String(o.id) === String(c.id))) {
+        ordered.push({ type: 'container', id: c.id, x: Number(c.coord_x), y: Number(c.coord_y), label: ordered.length + 1, raw: c });
+      }
+    });
+  } else {
+    containersData.value.forEach((c, idx) => ordered.push({ type: 'container', id: c.id, x: Number(c.coord_x), y: Number(c.coord_y), label: idx + 1, raw: c }));
+  }
+
+  // añadir central de fin si está presente
+  if (centralFinish.value && centralFinish.value.coord_x != null && centralFinish.value.coord_y != null) {
+    ordered.push({ type: 'finish', id: 'finish', x: Number(centralFinish.value.coord_x), y: Number(centralFinish.value.coord_y), label: 'F', raw: centralFinish.value });
+  }
+
+  // Mapear puntos ordenados a markers con posiciones en porcentaje
+  markers.value = ordered.map((p) => {
+    const leftPct = ((p.x - minX) / widthRange) * 100;
+    const topPct = ((maxY - p.y) / heightRange) * 100;
+    return {
+      id: p.id,
+      type: p.type,
+      left: `${leftPct}%`,
+      top: `${topPct}%`,
+      leftPct: leftPct,
+      topPct: topPct,
+      label: p.label,
+      raw: p.raw,
+    };
+  });
+
+  // Construir cadena de puntos para polyline (ordenada)
+  polylinePoints.value = markers.value.map(m => `${m.leftPct},${m.topPct}`).join(' ');
+  // Construir polyline que conecta solo contenedores (en orden)
+  const containerMarkers = markers.value.filter(m => m.type === 'container');
+  polylineContainersPoints.value = containerMarkers.map(m => `${m.leftPct},${m.topPct}`).join(' ');
+}
+
+// Recalcular marcadores cuando cambien containersData, centralStart o centralFinish
+watch([containersData, centralStart, centralFinish], () => computeMarkers());
+
+function handleMarkerClick(m) {
+  // establecer next_point a este contenedor (o central si se clicó start/finish)
+  if (!m) return;
+  if (m.type === 'container') {
+    routeactual.value.next_point = { type: 'container', id: m.id, coord_x: m.raw.coord_x, coord_y: m.raw.coord_y };
+  } else if (m.type === 'start') {
+    routeactual.value.next_point = { type: 'central_start', id: 'start', coord_x: m.raw.coord_x, coord_y: m.raw.coord_y };
+  } else if (m.type === 'finish') {
+    routeactual.value.next_point = { type: 'central_finish', id: 'finish', coord_x: m.raw.coord_x, coord_y: m.raw.coord_y };
+  }
+  // opcional: mostrar información pequeña o desplazarse al contenedor en la UI
+  console.log('Marcador clicado', m);
 }
 
 
@@ -452,6 +577,55 @@ function routeAssigned() {
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(78,83,54,0.08);
   border: 1px solid #eaeaea;
+}
+
+.map-inner { position: relative; display: block; width: 100%; }
+.map-image { display: block; width: 100%; height: auto; border-radius: 1rem; }
+.marker {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(94,101,65,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.marker.next { background: #27ae60; box-shadow: 0 2px 8px rgba(39,174,96,0.25); }
+.marker-label { pointer-events: none; }
+
+.marker.start { background: #2d8cff; }
+.marker.finish { background: #ff6b6b; }
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* allow clicks through to markers */
+}
+.overlay-line {
+  fill: none;
+  stroke: rgba(78,83,54,0.85);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 3;
+  stroke-linecap: round;
+}
+
+.overlay-line-containers {
+  fill: none;
+  stroke: rgba(39,174,96,0.9);
+  stroke-width: 1.2;
+  stroke-dasharray: 0; /* solid */
+  stroke-linecap: round;
+  opacity: 0.9;
 }
 
 .info-wrapper {
