@@ -11,13 +11,13 @@
             <thead>
               <tr>
                 <th>ID Ruta</th>
-                <th>ID Conductor</th>
+                <th>Conductor</th>
                 <th>Fecha</th>
                 <th>Hora Inicio</th>
                 <th>Hora Fin</th>
                 <th>Estado Ruta</th>
-                <th>ID Central</th>
-                <th>ID Central de termino</th>
+                <th>Central de inicio</th>
+                <th>Central de termino</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -25,13 +25,13 @@
             <tbody>
               <tr v-for="route in routes.data" :key="route.id">
                 <td>{{ route.id }}</td>
-                <td>{{ route.id_driver }}</td>
+                <td>{{ getNameDriverById(route.id_driver) }}</td>
                 <td>{{ route.date_ }}</td>
                 <td>{{ route.start_time }}</td>
                 <td>{{ route.end_time }}</td>
                 <td>{{ route.route_status }}</td>
-                <td>{{ route.id_central }}</td>
-                <td>{{ route.id_central_finish}}</td>
+                <td>{{ getNameCentralById(route.id_central) }}</td>
+                <td>{{ getNameCentralById(route.id_central_finish) }}</td>
                 <td class="row-actions">
                   <button
                     class="btn-take"
@@ -56,12 +56,15 @@ import { ref, onMounted } from 'vue';
 import HomeDriverView from '@/components/Users/HomeDrive.vue';
 import routeServices from '@/services/routeservices';
 import DriverServices from '@/services/driverservices';
+import centralServices from '@/services/centralservices';
 import { jwtDecode } from "jwt-decode";
 
 // Definir variables reactivas
 const routes = ref([]); // Lista de rutas asignadas
 const userEmail = ref(""); // Email del usuario logueado
 const driver = ref(null); // Conductor obtenido desde la API
+const central = ref(null); // Central obtenida desde la API
+const centralNames = ref({}); // cache id -> name
 
 // Obtener los datos del conductor logueado
 async function getDriverData(email) {
@@ -80,6 +83,37 @@ async function getDriverData(email) {
   } catch (err) {
     console.error("Error obteniendo los datos del conductor:", err);
   }
+}
+
+function getNameDriverById(id) {
+  if (!driver.value || String(driver.value.id) !== String(id)) {
+    return "Desconocido";
+  }
+  return `${driver.value.name} ${driver.value.last_name}`;
+}
+
+function getNameCentralById(id) {
+  if (id === null || id === undefined) return 'Desconocido'
+
+  // If we have it cached, return synchronously (so template can render)
+  if (centralNames.value[String(id)]) return centralNames.value[String(id)]
+
+  // Otherwise, start an async fetch in background and return a placeholder
+  centralServices.getCentralById(id)
+    .then(res => {
+      const c = (res && res.data) ? res.data : res
+      if (c && String(c.id) === String(id)) {
+        centralNames.value[String(id)] = c.name || 'Desconocido'
+      } else {
+        centralNames.value[String(id)] = 'Desconocido'
+      }
+    })
+    .catch(err => {
+      console.error('Error loading central', id, err)
+      centralNames.value[String(id)] = 'Desconocido'
+    })
+
+  return 'Cargando...'
 }
 
 // Obtener todas las rutas asignadas al conductor logueado (pendientes + ruta en curso)
