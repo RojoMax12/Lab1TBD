@@ -20,7 +20,8 @@ public class PickUpRepository {
     //CRUD Operations
 
     public PickUpEntity CreatePickUp(PickUpEntity pickUpEntity) {
-        String sql = "INSERT INTO pickup (id_container, id_route, date_hour) VALUES (:id_container, :id_route, :date_hour)";
+        // Use COALESCE to fall back to NOW() when date_hour is null
+        String sql = "INSERT INTO pickup (id_container, id_route, date_hour) VALUES (:id_container, :id_route, COALESCE(:date_hour, NOW()))";
         Connection connection = null;
         try {
             connection = sql2o.open();
@@ -34,7 +35,7 @@ public class PickUpRepository {
             return pickUpEntity;
         } catch (Sql2oException e) {
             System.err.println("Error al insertar el pick up: " + e.getMessage());
-            throw new RuntimeException("No se pudo crear el pick up");
+            throw new RuntimeException("No se pudo crear el pick up: " + e.getMessage(), e);
         } finally {
             if (connection != null) {
                 connection.close();

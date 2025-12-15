@@ -5,6 +5,8 @@
     <div class="route-assigned-view">
       <h1 class="title">Rutas Asignadas</h1>
 
+      <button class="actual-route" @click="VolverInicio">Ver Ruta Actual</button>
+
       <div class="container">
         <div class="horizontal-scroll">
           <table class="route-table">
@@ -58,6 +60,9 @@ import routeServices from '@/services/routeservices';
 import DriverServices from '@/services/driverservices';
 import centralServices from '@/services/centralservices';
 import { jwtDecode } from "jwt-decode";
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // Definir variables reactivas
 const routes = ref([]); // Lista de rutas asignadas
@@ -65,6 +70,7 @@ const userEmail = ref(""); // Email del usuario logueado
 const driver = ref(null); // Conductor obtenido desde la API
 const central = ref(null); // Central obtenida desde la API
 const centralNames = ref({}); // cache id -> name
+
 
 // Obtener los datos del conductor logueado
 async function getDriverData(email) {
@@ -114,6 +120,11 @@ function getNameCentralById(id) {
     })
 
   return 'Cargando...'
+}
+
+// Navegar a la vista de ruta actual
+const VolverInicio = () => {
+  router.push('/driver');
 }
 
 // Obtener todas las rutas asignadas al conductor logueado (pendientes + ruta en curso)
@@ -199,6 +210,12 @@ const takeRoute = (route) => {
       // Refrescar la lista para reflejar cambios y bloqueo de otras rutas
       if (driver.value) getallrouteassigned(driver.value);
       alert(`Ruta con ID ${route.id} ha sido tomada y está en proceso.`);
+      // Redirigir al path /driver para que el conductor vea su vista de ruta
+      try {
+        router.push('/driver');
+      } catch (navErr) {
+        console.warn('No se pudo redirigir a /driver:', navErr);
+      }
     })
     .catch((error) => {
       console.error('Error al actualizar la ruta:', error);
@@ -320,6 +337,22 @@ onMounted(() => {
 }
 
 .btn-take:hover:not(:disabled) {
+  background-color: #3f4732;
+}
+
+.actual-route {
+  background: #4e5336;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  transition: background 0.18s, box-shadow 0.18s;
+}
+
+.actual-route:hover {
   background-color: #3f4732;
 }
 </style>

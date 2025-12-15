@@ -68,7 +68,7 @@
         </div>
         
         <div class="controls-container">
-          <button class="nextpoint" @click="handleNextPoint">
+          <button class="nextpoint" @click="handleNextPoint" :disabled="processingNext">
             Siguiente punto
           </button>
           <button class="routefinish" @click="complete(routeactual)">
@@ -94,6 +94,7 @@ import centralServices from '@/services/centralservices';
 import RouteContainer from '@/services/route_containerservices';
 import ContainerServices from '@/services/containerservices';
 import WasteServices from '@/services/wasteservices';
+import PickUpServices from '@/services/pickupservices';
 
 
 // Referencias reactivas
@@ -114,6 +115,7 @@ const centralFinish = ref({});
 const routecontainers = ref([]); // Lista de la tabla de unión
 const containersData = ref([]); // Lista de objetos contenedor
 const wastesData = ref([]);   // Lista de objetos waste (residuos)
+const processingNext = ref(false);
 
 // Datos del conductor
 const name = ref('');
@@ -243,7 +245,9 @@ function complete(routeactual) {
     RouteServices.updateRouteStatus(routeactual.id_route, "Finalizada")
       .then(() => {
         alert("Ruta marcada como 'Finalizada' exitosamente.");
-        routeactual.route_status = "Finalizada"; 
+        routeactual.route_status = "Finalizada";
+        // Limpiar datos de la ruta actual en la UI
+        clearCurrentRouteData();
       })
       .catch(error => {
         console.error("Error al actualizar la ruta:", error);
@@ -254,13 +258,124 @@ function complete(routeactual) {
   }
 }
 
+// Limpiar los datos de la ruta actual en la UI (tabla de ruta actual)
+function clearCurrentRouteData() {
+  routeactual.value = {
+    id_route: null,
+    date: 'N/A',
+    route_status: 'Sin Ruta',
+    id_central: null,
+    id_central_finish: null,
+    start_time: 'N/A',
+    end_time: 'N/A',
+    next_point: 'N/A',
+  };
+  centralStart.value = {};
+  centralFinish.value = {};
+  routecontainers.value = [];
+  containersData.value = [];
+  wastesData.value = [];
+}
+
 // Función placeholder para el siguiente punto
-function handleNextPoint() {
-    alert("Función 'Siguiente punto' no implementada. Se debe actualizar el estado del contenedor actual y avanzar al siguiente punto en la base de datos.");
-    // Aquí iría la lógica para: 
-    // 1. Llamar a la API para actualizar el estado del contenedor actual (Ej: "Vaciado").
-    // 2. Llamar a la 
-    // API para actualizar `routeactual.next_point` al ID/coordenada del siguiente contenedor.
+async function handleNextPoint() {
+  if (!routeactual.value || !routeactual.value.id_route) {
+    alert('No hay una ruta activa definida.');
+    return;
+  }
+
+  const routeId = routeactual.value.id_route;
+
+  // Si no hay contenedores pendientes, finalizar la ruta
+  if (!containersData.value || containersData.value.length === 0) {
+    alert('No quedan contenedores por visitar. La ruta se finalizará.');
+    try {
+      await RouteServices.updateRouteStatus(routeId, 'Finalizada');
+      routeactual.value.route_status = 'Finalizada';
+      // Limpiar UI de ruta actual
+      clearCurrentRouteData();
+      try {
+        await refreshRouteByRouteId(routeId);
+      } catch (refreshErr) {
+        console.warn('Ruta finalizada pero fallo al refrescar desde servidor:', refreshErr);
+      }
+    } catch (err) {
+      console.error('Error al finalizar la ruta automáticamente:', err);
+      alert('Error al finalizar la ruta.');
+    }
+    return;
+  }
+
+  // Determinar el siguiente contenedor: usar el primero de la lista (ordenado) como objetivo
+  const nextContainer = containersData.value[0];
+  if (!nextContainer) {
+    alert('No se encontró el siguiente contenedor.');
+    return;
+  }
+
+  processingNext.value = true;
+  try {
+    // Crear un registro de pickup en el backend para marcar la visita
+    const payload = { id_container: nextContainer.id, id_route: routeId };
+    await PickUpServices.createPickUp(payload);
+
+    // Remover localmente el contenedor visitado para avanzar
+    containersData.value = containersData.value.filter(c => String(c.id) !== String(nextContainer.id));
+    routecontainers.value = routecontainers.value.filter(rc => String(rc.id_container) !== String(nextContainer.id));
+
+    // Si quedan contenedores, el siguiente objetivo sera el primero de la lista actualizada
+    if (containersData.value.length > 0) {
+      const nxt = containersData.value[0];
+      routeactual.value.next_point = { type: 'container', id: nxt.id, coord_x: nxt.coord_x, coord_y: nxt.coord_y };
+    } else {
+      // No quedan mas contenedores: finalizar ruta (se intentará también en backend)
+      routeactual.value.next_point = null;
+      alert('No quedan contenedores por visitar. La ruta se finalizará.');
+      try {
+        await RouteServices.updateRouteStatus(routeId, 'Finalizada');
+        routeactual.value.route_status = 'Finalizada';
+        // Limpiar UI de ruta actual
+        clearCurrentRouteData();
+      } catch (statusErr) {
+        console.warn('No se pudo marcar la ruta como Finalizada en el servidor:', statusErr);
+      }
+    }
+
+    // Forzar reactividad
+    routeactual.value = { ...routeactual.value };
+
+    // Intentar refrescar desde backend; si falla, no mostrar error crítico al usuario
+    try {
+      await refreshRouteByRouteId(routeId);
+    } catch (refreshErr) {
+      console.warn('Recoleccion creada:', refreshErr);
+      alert('Recoleccion creada, Avanzando al siguiente punto');
+    }
+
+  } catch (err) {
+    // Error al crear el pickup (autorización o inserción)
+    console.error('Error creando pickup o avanzando al siguiente contenedor:', err);
+    if (err && err.response && err.response.status === 403) {
+      console.warn('403 recibido al crear pickup. Token y permisos podrían ser la causa.');
+      const token = localStorage.getItem('jwt');
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          console.log('Token presente. Usuario esperado (sub):', decoded.sub || decoded.email || decoded.username, 'Rol token (usertype claim):', decoded.usertype || '(claim usertype no encontrado)');
+        } catch (decErr) {
+          console.warn('No se pudo decodificar token para depuración:', decErr);
+        }
+      } else {
+        console.warn('No hay token JWT en localStorage.');
+      }
+      alert('Acceso denegado (403). Verifica que estés autenticado y tengas permisos para crear pick-ups.');
+    } else {
+      // Mostrar mensaje más claro
+      alert('Ocurrió un error al crear el pickup. Revisa la consola o intenta de nuevo.');
+    }
+  } finally {
+    processingNext.value = false;
+  }
 }
 
 function routeAssigned() {

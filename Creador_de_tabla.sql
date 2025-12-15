@@ -247,7 +247,7 @@ CREATE OR REPLACE PROCEDURE planificar_ruta(
     p_end_time TIME              -- Hora de fin como parámetro
 )
 LANGUAGE plpgsql
-AS $$ 
+AS $$
 DECLARE
     v_contenedor_id BIGINT;
     v_error BOOLEAN := FALSE;
@@ -255,9 +255,22 @@ DECLARE
     new_route_id BIGINT;
     contenedores_jsonb JSONB := p_contenedores::JSONB;  -- Convertir JSON a JSONB
     contenedor_count INT;  -- Variable para contar los contenedores
+
+    -- Variables para orden greedy
+    cur_x DOUBLE PRECISION := 0.0;
+    cur_y DOUBLE PRECISION := 0.0;
+    sel_id BIGINT;
+    sel_x DOUBLE PRECISION;
+    sel_y DOUBLE PRECISION;
+    i INT;
+
 BEGIN
     -- Contar los elementos en el JSONB
     contenedor_count := jsonb_array_length(contenedores_jsonb);
+
+    IF contenedor_count = 0 THEN
+        RAISE EXCEPTION 'Error: lista de contenedores vacía';
+    END IF;
 
     -- Validar existencia y disponibilidad de los contenedores
     FOR rec IN SELECT * FROM jsonb_array_elements_text(contenedores_jsonb) AS contenedor(id)
@@ -285,26 +298,73 @@ BEGIN
         RAISE EXCEPTION 'Error: uno o más contenedores no existen o están asignados a una ruta pendiente';
     END IF;
 
+    -- Crear tabla temporal para almacenar contenedores con coordenadas y estado de selección
+    CREATE TEMP TABLE tmp_route_containers (
+        id BIGINT PRIMARY KEY,
+        coord_x DOUBLE PRECISION,
+        coord_y DOUBLE PRECISION,
+        selected BOOLEAN DEFAULT FALSE
+    ) ON COMMIT DROP;
+
+    -- Rellenar la tabla temporal con los contenedores provistos
+    INSERT INTO tmp_route_containers (id, coord_x, coord_y)
+    SELECT contenedor.id::BIGINT, c.coord_x::DOUBLE PRECISION, c.coord_y::DOUBLE PRECISION
+    FROM jsonb_array_elements_text(contenedores_jsonb) AS contenedor(id)
+    JOIN container c ON c.id = contenedor.id::BIGINT;
+
     -- Crear la nueva ruta con las horas de inicio y fin
     INSERT INTO route (id_driver, date_, start_time, end_time, route_status, id_central, id_central_finish)
     VALUES (p_id_driver, NOW(), p_start_time, p_end_time, 'Pendiente', p_id_central, p_id_central_finish)
     RETURNING id INTO new_route_id;
 
-    -- Asociar los contenedores con la nueva ruta usando la tabla `route_container`
-    FOR rec IN SELECT * FROM jsonb_array_elements_text(contenedores_jsonb) AS contenedor(id)
-    LOOP
-        -- Insertar la relación contenedor-ruta en la tabla `route_container`
+    -- Obtener coordenadas iniciales (central de inicio)
+    BEGIN
+        SELECT coord_x, coord_y INTO cur_x, cur_y FROM central WHERE id = p_id_central LIMIT 1;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+        cur_x := 0.0;
+        cur_y := 0.0;
+    END;
+
+    -- Ordenar los contenedores usando algoritmo greedy (nearest neighbour)
+    FOR i IN 1..contenedor_count LOOP
+        -- Seleccionar el contenedor no seleccionado más cercano al punto actual
+        SELECT id, coord_x, coord_y INTO sel_id, sel_x, sel_y
+        FROM tmp_route_containers
+        WHERE selected = FALSE
+        ORDER BY (
+            2 * 6371 * asin(
+                sqrt(
+                    power(sin(radians((coord_x - cur_x) / 2)), 2) +
+                    cos(radians(cur_x)) * cos(radians(coord_x)) * power(sin(radians((coord_y - cur_y) / 2)), 2)
+                )
+            )
+        )
+        LIMIT 1;
+
+        -- Si no se encontró ninguno, salir
+        IF NOT FOUND THEN
+            EXIT;
+        END IF;
+
+        -- Marcar como seleccionado
+        UPDATE tmp_route_containers SET selected = TRUE WHERE id = sel_id;
+
+        -- Insertar la relación contenedor-ruta en la tabla `route_container` en el orden calculado
         INSERT INTO route_container (id_container, id_route)
-        VALUES (rec.id::BIGINT, new_route_id);
+        VALUES (sel_id, new_route_id);
 
         -- Actualizar el estado del contenedor a "Ocupado"
         UPDATE container
         SET status = 'Ocupado'
-        WHERE id = rec.id::BIGINT;
+        WHERE id = sel_id;
+
+        -- Mover el punto actual al contenedor seleccionado
+        cur_x := sel_x;
+        cur_y := sel_y;
     END LOOP;
 
     -- Confirmación del éxito
-    RAISE NOTICE 'Ruta planificada con ID % y % contenedores asignados', new_route_id, contenedor_count;
+    RAISE NOTICE 'Ruta planificada con ID % y % contenedores asignados (orden optimizado por distancia)', new_route_id, contenedor_count;
 END;
 $$;
 

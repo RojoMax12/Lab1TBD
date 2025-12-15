@@ -129,10 +129,21 @@ public class RouteRepository {
     public void updateRouteStatus(Long id, String status) {
         String sql = "UPDATE route SET route_status = :route_status WHERE id = :id";
         try (Connection conn = sql2o.open()) {
+            // Actualizar estado de la ruta
             conn.createQuery(sql)
                     .addParameter("route_status", status)
                     .addParameter("id", id)
                     .executeUpdate();
+
+            // Si la ruta se finaliza, liberar los contenedores asociados (marcar 'Disponible')
+            if (status != null && status.equalsIgnoreCase("Finalizada")) {
+                String sqlUpdateContainers = "UPDATE container SET status = 'Disponible' " +
+                        "WHERE id IN (SELECT id_container FROM route_container WHERE id_route = :id_route) " +
+                        "AND status = 'Ocupado'";
+                conn.createQuery(sqlUpdateContainers)
+                        .addParameter("id_route", id)
+                        .executeUpdate();
+            }
         } catch (Exception e) {
             System.err.println("Error al actualizar la ruta: " + e.getMessage());
             throw new RuntimeException("No se pudo actualizar la ruta", e);
