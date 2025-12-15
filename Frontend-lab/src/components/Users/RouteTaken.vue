@@ -8,26 +8,26 @@
           <thead>
             <tr>
               <th>ID Ruta</th>
-              <th>ID Conductor</th>
+              <th>Conductor</th>
               <th>Fecha</th>
               <th>Hora Inicio</th>
               <th>Hora Fin</th>
               <th>Estado Ruta</th>
-              <th>ID Central</th>
-              <th>ID Punto de Retiro</th>
+              <th>Central de inicio</th>
+              <th>Central de termino</th>
             </tr>
           </thead>
 
           <tbody>
               <tr v-for="route in routes.data" :key="route.id" >
                 <td>{{ route.id }}</td>
-                <td>{{ route.id_driver }}</td>
+                <td>{{ getNameDriverById(route.id_driver) }}</td>
                 <td>{{ route.date_ || 'Fecha no disponible' }}</td>
                 <td>{{ route.start_time || 'Hora no disponible' }}</td>
                 <td>{{ route.end_time || 'Hora no disponible' }}</td>
                 <td>{{ route.route_status || 'Estado no disponible' }}</td>
-                <td>{{ route.id_central || 'No disponible' }}</td>
-                <td>{{ route.id_central_finish || 'No disponible' }}</td>
+                <td>{{ getCentralNameById(route.id_central) }}</td>
+                <td>{{ getCentralNameById(route.id_central_finish) }}</td>
               </tr>
             </tbody>
         </table>
@@ -41,12 +41,17 @@
 import { ref, onMounted } from 'vue';
 import routeServices from '@/services/routeservices';
 import DriverServices from '@/services/driverservices';
+import CentralServices from '@/services/centralservices';
 import { jwtDecode } from "jwt-decode";
 
 // Definir variables reactivas
 const routes = ref([]); // Lista de rutas asignadas
 const userEmail = ref(""); // Email del usuario logueado
 const driver = ref(null); // Conductor obtenido desde la API
+const centralStart = ref(null); // Central de inicio
+const centralEnd = ref(null); // Central de termino
+const centralNames = ref({}); // cache id -> name
+const driverNames = ref({}); // cache id -> name
 
 // Obtener los datos del conductor logueado
 async function getDriverData(email) {
@@ -66,6 +71,51 @@ async function getDriverData(email) {
     console.error("Error obteniendo los datos del conductor:", err);
   }
 }
+
+function getNameDriverById(driverId) {
+  if (driverId === null || driverId === undefined) return 'Nombre no disponible'
+
+  const key = String(driverId)
+  // Devuelve cache si existe
+  if (driverNames.value[key]) return driverNames.value[key]
+
+  // Marcar como cargando y disparar la petición en background
+  driverNames.value[key] = 'Cargando...'
+  DriverServices.getDriverById(driverId)
+    .then(response => {
+      const d = response && response.data ? response.data : response
+      driverNames.value[key] = (d && d.name) ? d.name : 'Nombre no disponible'
+    })
+    .catch(err => {
+      console.error('Error obteniendo el nombre del conductor:', err)
+      driverNames.value[key] = 'Nombre no disponible'
+    })
+
+  return driverNames.value[key]
+}
+
+function getCentralNameById(centralId) {
+  if (centralId === null || centralId === undefined) return 'Nombre no disponible'
+
+  const key = String(centralId)
+  // Devuelve cache si existe
+  if (centralNames.value[key]) return centralNames.value[key]
+
+  // Marcar como cargando y disparar la petición en background
+  centralNames.value[key] = 'Cargando...'
+  CentralServices.getCentralById(centralId)
+    .then(response => {
+      const c = response && response.data ? response.data : response
+      centralNames.value[key] = (c && c.name) ? c.name : 'Nombre no disponible'
+    })
+    .catch(err => {
+      console.error('Error obteniendo el nombre de la central:', err)
+      centralNames.value[key] = 'Nombre no disponible'
+    })
+
+  return centralNames.value[key]
+}
+
 
 // Obtener todas las rutas asignadas al conductor logueado
 const getallrouteassigned = (driver) => {
